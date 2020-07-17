@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Release\</OutputPath>
+    <OutputPath>Release\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -35,9 +35,8 @@
     <ApplicationIcon>invoiceapp.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="iTR.Lib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Release\iTR.Lib.dll</HintPath>
+    <Reference Include="iTR.Lib">
+      <HintPath>..\iTR\Release\iTR.Lib.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -89,13 +88,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="invoiceapp.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="InvoiceHelper\InvoiceHelper.csproj">
       <Project>{ab33bbb0-998f-4161-bc90-42e69bdb10ba}</Project>
       <Name>InvoiceHelper</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="invoiceapp.ico" />
+    <ProjectReference Include="InvoiceUtils\InvoiceUtils.csproj">
+      <Project>{5f19d03d-816a-4247-b22c-3159329859be}</Project>
+      <Name>InvoiceUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

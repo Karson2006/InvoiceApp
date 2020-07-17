@@ -10,10 +10,10 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
-using iTR.OP.Invoice;
 using System.Threading;
 using iTR.Lib;
 using System.Xml;
+using iTR.OP.Invoice; 
 
 
 namespace InvoiceApp
@@ -71,7 +71,7 @@ namespace InvoiceApp
                     }
 
 
-                    System.Threading.Thread.Sleep(5*60*1000);
+                    System.Threading.Thread.Sleep(interval * 60*1000);
                 }
                 catch (Exception err)
                 {
