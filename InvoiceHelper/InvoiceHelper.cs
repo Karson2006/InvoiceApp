@@ -32,11 +32,13 @@ namespace iTR.OP.Invoice
         public InvoiceCheckResult Scan_Check(string fileName, string fileType,int timeOutSecond = 8)
         {
             InvoiceCheckResult result = null;
+            string resdata = "";
             try
             {
                 byte[] bytes = bytes = GetBytesByPath(fileName);;
-                string base64String = Convert.ToBase64String(bytes);;
-                result= KingDeeApi.Check(fileName, base64String);
+                string base64String = Convert.ToBase64String(bytes);
+                resdata = KingDeeApi.Check(fileName, base64String);
+                result = JsonConvert.DeserializeObject<InvoiceCheckResult>(resdata);
                 
             }
             catch (Exception err)

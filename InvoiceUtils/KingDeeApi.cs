@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Invoice.Utils
 {
+    
     public class KingDeeApi
     {
         private static string disData;
@@ -49,7 +50,7 @@ namespace Invoice.Utils
         /// <param name="fileName">文件名</param>
         /// <param name="base64String">base64 字符串 </param>
         /// <returns></returns>
-        public static InvoiceCheckResult Check(string fileName, string base64string)
+        public static string Check(string fileName, string base64string)
         {
 
             string token = GetAccessToken();
@@ -137,6 +138,7 @@ namespace Invoice.Utils
                         //不用验真的
                         else
                         {
+                            item.checkStatus = "通过";
                             //火车票
                             if (item.invoiceType == "9")
                             {
@@ -167,7 +169,7 @@ namespace Invoice.Utils
             {
                 InvoiceLogger.WriteToDB(ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
             }
-            return invoiceCheckResult;
+            return JsonConvert.SerializeObject(invoiceCheckResult);
         }
         //获取识别结果
         private static InvoiceDisResult GetDisResult(string disJson)
@@ -346,6 +348,8 @@ namespace Invoice.Utils
         public string totalAmount { get; set; }
         public string checkCode { get; set; }
 
+        public string checkStatus { get; set; }
+        
         //火车票的
         public string printingSequenceNo { get; set; }
 
