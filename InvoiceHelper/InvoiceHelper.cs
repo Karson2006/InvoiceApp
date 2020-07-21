@@ -35,7 +35,14 @@ namespace iTR.OP.Invoice
          
             try
             {
-                byte[] bytes = bytes = GetBytesByPath(fileName);;
+                //解密后的文件名
+                string decryptFileName = fileName + "_D";
+                //若没有解过密，再先解密
+                if(!File.Exists(decryptFileName))
+                {
+                    EncrptionUtil.AttDecrypt(fileName, decryptFileName);
+                }
+                byte[] bytes = bytes = GetBytesByPath(decryptFileName);
                 string base64String = Convert.ToBase64String(bytes);
                 result = KingDeeApi.Check(fileName, base64String);
             }
