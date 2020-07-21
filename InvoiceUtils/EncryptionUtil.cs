@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
+using System.ServiceModel.Channels;
 using System.Text;
-
+using InvoiceUtils.OAAttachment;
+using iTR.Lib;
+using Exception = System.Exception;
 namespace Invoice.Utils
 {
     public class EncrptionUtil
@@ -85,6 +88,64 @@ namespace Invoice.Utils
             {
                 return ex.Message;
 
+            }
+
+        }
+        /// <summary>
+        /// 附件解密
+        /// </summary>
+        /// <returns></returns>
+        public static bool AttDecrypt(string inFileName,string outFileName)
+        {
+            try
+            {
+                AttMainClient attMain = new AttMainClient();
+                attMain.decrypt(inFileName, outFileName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.WriteLog(ex.Message, 0);
+                return false;
+            }
+
+        }
+        /// <summary>
+        /// 附件加密
+        /// </summary>
+        /// <param name="inFileName">待加密文件</param>
+        /// <param name="outFileName">加密后文件</param>
+        /// <param name="type">加密方式：0轻度加密，1深度加密</param>
+        /// <returns></returns>
+        public static bool AttEncrypt(string inFileName, string outFileName, int t)
+        {
+            string type = "";
+            if (t != 0 || t != 1)
+            {
+                return false;
+            }
+            if (t == 0)
+            {
+                type = "ICoder.VERSON01";
+            }
+            if (t == 1)
+            {
+                type = "ICoder.VERSON02";
+            }
+            else
+            {
+                return false;
+            }
+            try
+            {
+                AttMainClient attMain = new AttMainClient();
+                attMain.encrypt(inFileName, outFileName, type);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.WriteLog(ex.Message, 0);
+                return false;
             }
 
         }
