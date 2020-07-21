@@ -122,9 +122,10 @@ namespace Invoice.Utils
         public static bool AttEncrypt(string inFileName, string outFileName, int t)
         {
             string type = "";
+            bool flag = false;
             if (t != 0 || t != 1)
             {
-                return false;
+                flag = false;
             }
             if (t == 0)
             {
@@ -136,20 +137,20 @@ namespace Invoice.Utils
             }
             else
             {
-                return true;
+                flag = true;
             }
             try
             {
                 AttMainClient attMain = new AttMainClient();
                 attMain.encrypt(inFileName, outFileName, type);
-                return true;
+                flag = true;
             }
             catch (Exception ex)
             {
                 FileLogger.WriteLog(ex.Message, 0);
-                return false;
+                flag = false;
             }
-
+            return flag;
         }
         ///// <summary>
         ///// 
