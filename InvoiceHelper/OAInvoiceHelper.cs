@@ -65,6 +65,10 @@ namespace iTR.OP.Invoice
                     
                     InvoiceCheckResult chkResult = invoice.Scan_Check(fileName, fileType);
                     FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " 处理文件：" + fileName, 2);
+                    if(chkResult==null)//云接口调用报错，没有正常返回
+                    {
+                        throw new Exception("调用发票云接口错误");
+                    }
                     if(chkResult.errcode=="0000")//操作成功
                     {
                         int invoiceSeq = 0;

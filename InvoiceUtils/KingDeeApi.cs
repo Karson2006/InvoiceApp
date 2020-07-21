@@ -50,7 +50,7 @@ namespace Invoice.Utils
         /// <param name="fileName">文件名</param>
         /// <param name="base64String">base64 字符串 </param>
         /// <returns></returns>
-        public static string Check(string fileName, string base64string)
+        public static InvoiceCheckResult Check(string fileName, string base64string)
         {
 
             string token = GetAccessToken();
@@ -169,7 +169,7 @@ namespace Invoice.Utils
             {
                 InvoiceLogger.WriteToDB(ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
             }
-            return JsonConvert.SerializeObject(invoiceCheckResult);
+            return invoiceCheckResult;
         }
         //获取识别结果
         private static InvoiceDisResult GetDisResult(string disJson)
@@ -251,7 +251,7 @@ namespace Invoice.Utils
             {
                 strValue += StrDate + "\r\n";
             }
-            System.Diagnostics.Debug.WriteLine(strValue);
+            
             return strValue;
         }
 
@@ -314,7 +314,7 @@ namespace Invoice.Utils
                 {
                     strValue += StrDate + "\r\n";
                 }
-                System.Diagnostics.Debug.WriteLine(strValue);
+     
                 return strValue;
 
             }
