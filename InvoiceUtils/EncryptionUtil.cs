@@ -101,6 +101,10 @@ namespace Invoice.Utils
         {
             try
             {
+                if (inFileName.Trim().Length==0|| outFileName.Trim().Length == 0)
+                {
+                    return false;
+                }
                 AttMainClient attMain = new AttMainClient();
                 attMain.decrypt(inFileName, outFileName);
                 return true;
@@ -121,10 +125,13 @@ namespace Invoice.Utils
         public static bool AttEncrypt(string inFileName, string outFileName, int t)
         {
             string type = "";
-            bool flag = false;
-            if (t != 0 || t != 1)
+            if (inFileName.Trim().Length == 0 || outFileName.Trim().Length == 0)
             {
-                flag = false;
+                return false;
+            }
+            if (t != 0 && t != 1)
+            {
+                return false;
             }
             if (t == 0)
             {
@@ -134,22 +141,16 @@ namespace Invoice.Utils
             {
                 type = "ICoder.VERSON02";
             }
-            else
-            {
-                flag = true;
-            }
             try
             {
                 AttMainClient attMain = new AttMainClient();
                 attMain.encrypt(inFileName, outFileName, type);
-                flag = true;
+                return true;
             }
             catch (Exception ex)
             {
-                flag = false;
                 throw ex;
             }
-            return flag;
         }
         ///// <summary>
         ///// 
