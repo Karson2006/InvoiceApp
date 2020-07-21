@@ -107,8 +107,7 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
-                FileLogger.WriteLog(ex.Message, 0);
-                return false;
+                throw ex;
             }
 
         }
@@ -147,8 +146,8 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
-                FileLogger.WriteLog(ex.Message, 0);
                 flag = false;
+                throw ex;
             }
             return flag;
         }
