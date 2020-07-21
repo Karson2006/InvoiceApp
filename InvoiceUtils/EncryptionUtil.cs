@@ -94,6 +94,8 @@ namespace Invoice.Utils
         /// <summary>
         /// 附件解密
         /// </summary>
+        /// <param name="inFileName">待解密文件</param>
+        /// <param name="outFileName">解密后文件</param>
         /// <returns></returns>
         public static bool AttDecrypt(string inFileName,string outFileName)
         {
@@ -134,7 +136,7 @@ namespace Invoice.Utils
             }
             else
             {
-                return false;
+                return true;
             }
             try
             {
