@@ -183,7 +183,6 @@ namespace Invoice.Utils
                         item.checkDescription = recive.description == null ? "" : recive.description;
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
-                        string res = ($"发票验真成功,{ invoiceCheckResult.errcode}, {invoiceCheckResult.description}, {fileName}, {jsonstr}, {item.invoiceType}");
                         InvoiceLogger.WriteToDB("发票验真成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                     }
                 }
