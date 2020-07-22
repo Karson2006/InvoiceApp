@@ -9,6 +9,7 @@ using System.IO;
 using iTR.Lib;
 using System.Xml;
 using Invoice.Utils;
+using InvoiceUtils.OAAttachment;
 
 
 namespace iTR.OP.Invoice
@@ -46,7 +47,7 @@ namespace iTR.OP.Invoice
                 string base64String = Convert.ToBase64String(bytes);
                 result = KingDeeApi.Check(fileName, base64String);
             }
-            catch (Exception err)
+            catch (System.Exception err)
             {
                 //throw err;
                 FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "处理文件异常： " + err.Message, 2);
