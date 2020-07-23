@@ -91,6 +91,7 @@ namespace Invoice.Utils
                         item.invoiceMoney = item.invoiceMoney == null ? "" : item.invoiceMoney;
                         item.checkCode = item.checkCode == null ? "" : item.checkCode;
                         item.totalAmount = item.totalAmount == null ? "" : item.totalAmount;
+                        item.taxRate = item.taxRate == null ? "" : item.taxRate;
                         //验真类型
                         if (authType.Contains(item.invoiceType))
                         {
