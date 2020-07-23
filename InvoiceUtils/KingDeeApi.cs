@@ -75,7 +75,7 @@ namespace Invoice.Utils
                 //识别成功
                 if (invoiceDisResult.errcode == "0000")
                 {
-                    InvoiceLogger.WriteToDB("发票识别成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, disData);
+                    InvoiceLogger.WriteToDB("识别成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, disData);
                     //确定不通过的
                     List<string> code = new List<string>() { "1200", "1214", "1301", "0006", "0009", "1005", "1008", "1009", "0313", "0314" };
                     foreach (InvoiceCheckDetail item in invoiceDisResult.data)
@@ -153,11 +153,11 @@ namespace Invoice.Utils
                                         item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
                                 }
 
-                                InvoiceLogger.WriteToDB("发票验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
+                                InvoiceLogger.WriteToDB("验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                             }
                             catch (Exception ex)
                             {
-                                InvoiceLogger.WriteToDB("发票验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                                InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                                 continue;
                             }
                         }
@@ -202,7 +202,7 @@ namespace Invoice.Utils
                         item.checkDescription = recive.description == null ? "" : recive.description;
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
-                        InvoiceLogger.WriteToDB("发票识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                        InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                     }
                 }
                 else
@@ -212,7 +212,7 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
-                InvoiceLogger.WriteToDB("发票识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
+                InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
         }
