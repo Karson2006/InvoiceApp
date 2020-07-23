@@ -41,14 +41,14 @@ namespace iTR.OP.Invoice
             string path="";
             string fileType="2";
             int chkCount = 0;
-          
-            
+
+
             try
             {
                 InvoiceHelper invoice = new InvoiceHelper();
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
 
-                
+                //field0015发票代码为空、尝试次数field0033少于3次，已经过了验证日期的
                 string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033 from formson_5248 
                                Where  ISNULL(field0015,'') ='' and isnull(field0033,0)<=3 and isnull(field0039,'') ='是'" ;
 
@@ -69,14 +69,23 @@ namespace iTR.OP.Invoice
                     {
                         throw new Exception("调用发票云接口错误");
                     }
+                    
                     if(chkResult.errcode=="0000")//操作成功
                     {
                         int invoiceSeq = 0;
                         string rowID = "-1";
+                        
                         foreach(InvoiceCheckDetail i in chkResult.CheckDetailList)//每张发票查验结果
                         {
-                            if (i.invoiceNo.Trim().Length  > 0)
+                            rowID = row["ID"].ToString();
+                            if (i.invoiceType=="11")//不是发票,设置不是发票状态，以免下次还继续查验
                             {
+                                sql = "Update formson_5248 Set field0039='否' Where ID='" + rowID + "'";
+                                runner.ExecuteSqlNone(sql);
+                                continue;
+                            }
+                            if (i.invoiceNo.Trim().Length  > 0)
+                            {  
                                 decimal taxamout = 0;
                                 invoiceSeq = invoiceSeq + 1;
 
@@ -92,7 +101,7 @@ namespace iTR.OP.Invoice
 
                                 if (invoiceSeq == 1)//文件中只有一张发票
                                 {
-                                    rowID = row["ID"].ToString();
+                                    
                                 }
                                 else//文件中有多张发票,先插入新纪录
                                 {
@@ -161,5 +170,6 @@ namespace iTR.OP.Invoice
             }
             return result;
         }
+        
     }
 }

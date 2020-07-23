@@ -9,6 +9,7 @@ using System.IO;
 using iTR.Lib;
 using System.Xml;
 using Invoice.Utils;
+using InvoiceUtils.OAAttachment;
 
 
 namespace iTR.OP.Invoice
@@ -46,7 +47,7 @@ namespace iTR.OP.Invoice
                 string base64String = Convert.ToBase64String(bytes);
                 result = KingDeeApi.Check(fileName, base64String);
             }
-            catch (Exception err)
+            catch (System.Exception err)
             {
                 //throw err;
                 FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "处理文件异常： " + err.Message, 2);
@@ -72,38 +73,5 @@ namespace iTR.OP.Invoice
 
     }
 
-    //public class InvoiceCheckResult
-    //{
-    //    public string errcode { get; set; }
-    //    public string description { get; set; }
-
-    //    public List<InvoiceDetail> list;
-    //}
-
-
-    //public class InvoiceDetail
-    //{
-    //    /// <summary>
-    //    /// 发票流水号
-    //    /// </summary>
-    //    public string serialNo { get; set; }
-    //    /// <summary>
-    //    /// 
-    //    /// </summary>
-    //    public string invoiceCode { get; set; }
-    //    public string invoiceNo { get; set; }
-    //    public string invoiceDate { get; set; }
-    //    public string salerName { get; set; }
-    //    public string amount { get; set; }
-    //    public string taxAmount { get; set; }
-    //    public string totalAmount { get; set; }
-    //    public string invoiceType { get; set; }
-    //    public string buyerTaxNo { get; set; }
-    //    public string salerAccount { get; set; }
-    //    public string checkStatus { get; set; }
-    //    public string checkErrcode { get; set; }
-    //    public string checkCode { get; set; }
-    //    public string checkDescription { get; set; }
-        
-    //}
+  
 }

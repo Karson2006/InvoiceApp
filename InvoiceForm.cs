@@ -13,8 +13,8 @@ using System.IO;
 using System.Threading;
 using iTR.Lib;
 using System.Xml;
-using iTR.OP.Invoice; 
-
+using iTR.OP.Invoice;
+using Invoice.Utils;
 
 namespace InvoiceApp
 {
@@ -113,7 +113,20 @@ namespace InvoiceApp
             }
         }
 
-        
+        private void btOpen_Click(object sender, EventArgs e)
+        {
+            if (openInvoiceFile.ShowDialog() == DialogResult.OK)
+            {
+                txFileName.Text = openInvoiceFile.FileName;
+            }
+                       
+        }
+
+        private void btDebug_Click(object sender, EventArgs e)
+        {
+            iTR.OP.Invoice.InvoiceHelper invoice = new InvoiceHelper();
+            InvoiceCheckResult result = invoice.Scan_Check(txFileName.Text,"1");
+        }
     }
 
 }
