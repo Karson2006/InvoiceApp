@@ -72,6 +72,8 @@ namespace Invoice.Utils
                 InvoiceDisResult invoiceDisResult = GetDisResult(disData);
                 invoiceCheckResult.errcode = invoiceDisResult.errcode;
                 invoiceCheckResult.description = invoiceDisResult.description;
+                //不需要验真的状态
+
                 //识别成功
                 if (invoiceDisResult.errcode == "0000")
                 {
@@ -146,7 +148,10 @@ namespace Invoice.Utils
                                 item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
                                 item.amount = recive.data.amount == null ? "" : recive.data.amount;
                                 item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
-
+                                item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
+                                //验真状态 识别成功都有状态
+                                item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
+                                item.checkDescription = recive.description == null ? "" : recive.description;
                                 //税率
                                 if (taxtype.Contains(item.invoiceType))
                                 {                                    
@@ -157,6 +162,10 @@ namespace Invoice.Utils
                             }
                             catch (Exception ex)
                             {
+                                item.checkErrcode = "10001";
+                                item.checkDescription = "验真异常发票";
+                                //添加发票
+                                invoiceCheckResult.CheckDetailList.Add(item);
                                 InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                                 continue;
                             }
@@ -167,13 +176,13 @@ namespace Invoice.Utils
                         {
                             //避免不需要验真的发票没有数据 获取null 发生异常
 
-
                             item.serialNo = item.serialNo == null ? "" : item.serialNo;
                             item.salerName = item.salerName == null ? "" : item.salerName;
                             item.salerAccount = item.salerAccount == null ? "" : item.salerAccount;
                             item.amount = item.amount == null ? "" : item.amount;
                             item.buyerTaxNo = item.buyerTaxNo == null ? "" : item.buyerTaxNo;
-
+                            item.checkErrcode = "0000";
+                            item.checkDescription = "不需要验真发票状态正常";
 
                             item.checkStatus = "通过";
                             //火车票
@@ -197,9 +206,7 @@ namespace Invoice.Utils
                         {
                             item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
                         }
-                        //验真状态
-                        item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
-                        item.checkDescription = recive.description == null ? "" : recive.description;
+
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
                         InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
@@ -213,6 +220,7 @@ namespace Invoice.Utils
             catch (Exception ex)
             {
                 InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
+                throw ex;
             }
             return invoiceCheckResult;
         }
