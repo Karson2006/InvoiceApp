@@ -61,7 +61,7 @@ namespace Invoice.Utils
 
             //二手车没有税率 12 机动车识别和验真都返回taxrate 另外判断
             List<string> taxtype
-                = new List<string> { "1", "2", "3", "4", "5", "12", "15" };
+                = new List<string> { "1", "2", "3", "4", "5", "15" };
             //识别 + json 查验
             InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
             try
@@ -196,11 +196,6 @@ namespace Invoice.Utils
                         else
                         {
                             item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
-                        }
-                        //只有机动车有 taxrate ，覆盖验真的taxrate 用识别的taxrate
-                        if (item.invoiceType == "12")
-                        {
-                            item.taxRate = item.taxRate == null ? "" : item.taxRate;
                         }
                         //验真状态
                         item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
