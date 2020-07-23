@@ -119,7 +119,7 @@ namespace Invoice.Utils
                                 jsonstr = PostJson(ApiUtil.BaseUrl + ApiUtil.TextCheckUrl + token, jsonstr);
                                 //保存到日志的验真结果
                                 logjson = jsonstr;
-                                         recive = GetCheckResult(jsonstr);
+                                recive = GetCheckResult(jsonstr);
 
                                 //判断查验结果
                                 if (recive.errcode == "0000")
