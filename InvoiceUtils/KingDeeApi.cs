@@ -59,16 +59,16 @@ namespace Invoice.Utils
 
             List<string> authType = new List<string> { "1", "2", "3", "4", "5", "12", "13", "15" };
 
-            //二手车没有税率
+            //二手车没有税率 12 机动车识别和验真都返回taxrate 另外判断
             List<string> taxtype
-                = new List<string> { "1", "2", "3", "4", "5", "12",  "15" };
+                = new List<string> { "1", "2", "3", "4", "5", "12", "15" };
             //识别 + json 查验
             InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
             try
             {
                 //image和pdf用base64识别
                 disData = PostImage(ApiUtil.BaseUrl + ApiUtil.ImgDistguishUrl + token, base64string);
-
+                logjson = disData;
                 InvoiceDisResult invoiceDisResult = GetDisResult(disData);
                 invoiceCheckResult.errcode = invoiceDisResult.errcode;
                 invoiceCheckResult.description = invoiceDisResult.description;
@@ -81,8 +81,16 @@ namespace Invoice.Utils
                     foreach (InvoiceCheckDetail item in invoiceDisResult.data)
                     {
                         jsonstr = "";
-                        logjson = "";
+                        //默认识别结果日志
+                        logjson = disData;
                         ReciveData recive = new ReciveData();
+                        //虽然识别成功有些数据可能还是null
+                        item.invoiceCode = item.invoiceCode == null ? "" : item.invoiceCode;
+                        item.invoiceNo = item.invoiceNo == null ? "" : item.invoiceNo;
+                        item.invoiceDate = item.invoiceDate == null ? "" : item.invoiceDate;
+                        item.invoiceMoney = item.invoiceMoney == null ? "" : item.invoiceMoney;
+                        item.checkCode = item.checkCode == null ? "" : item.checkCode;
+                        item.totalAmount = item.totalAmount == null ? "" : item.totalAmount;
                         //验真类型
                         if (authType.Contains(item.invoiceType))
                         {
@@ -91,9 +99,9 @@ namespace Invoice.Utils
                             {
                                 item.invoiceMoney = item.totalAmount;
                             }
-
                             //验真用另一个数据结构
                             AuthData authData = new AuthData();
+
                             authData.invoiceCode = item.invoiceCode;
                             authData.invoiceNo = item.invoiceNo;
                             authData.invoiceDate = item.invoiceDate;
@@ -108,7 +116,7 @@ namespace Invoice.Utils
                                 jsonstr = PostJson(ApiUtil.BaseUrl + ApiUtil.TextCheckUrl + token, jsonstr);
                                 //保存到日志的验真结果
                                 logjson = jsonstr;
-                                recive = GetCheckResult(jsonstr);
+                                         recive = GetCheckResult(jsonstr);
 
                                 //判断查验结果
                                 if (recive.errcode == "0000")
@@ -132,7 +140,7 @@ namespace Invoice.Utils
                                     }
                                 }
                                 //避免验真不通过之后，获取null值发生异常
-                                item.serialNo = recive.data.serialNo==null?"": recive.data.serialNo;
+                                item.serialNo = recive.data.serialNo == null ? "" : recive.data.serialNo;
                                 item.salerName = recive.data.salerName == null ? "" : recive.data.salerName;
                                 item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
                                 item.amount = recive.data.amount == null ? "" : recive.data.amount;
@@ -140,13 +148,15 @@ namespace Invoice.Utils
 
                                 //税率
                                 if (taxtype.Contains(item.invoiceType))
-                                {
-                                    item.items[0].taxRate = recive.data.items[0].taxRate;
-                                }                              
+                                {                                    
+                                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                                }
+
+                                InvoiceLogger.WriteToDB("发票验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                             }
                             catch (Exception ex)
                             {
-                               InvoiceLogger.WriteToDB(ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, "发票验真异常");
+                                InvoiceLogger.WriteToDB("发票验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                                 continue;
                             }
                         }
@@ -154,6 +164,16 @@ namespace Invoice.Utils
                         //不用验真的
                         else
                         {
+                            //避免不需要验真的发票没有数据 获取null 发生异常
+
+
+                            item.serialNo = item.serialNo == null ? "" : item.serialNo;
+                            item.salerName = item.salerName == null ? "" : item.salerName;
+                            item.salerAccount = item.salerAccount == null ? "" : item.salerAccount;
+                            item.amount = item.amount == null ? "" : item.amount;
+                            item.buyerTaxNo = item.buyerTaxNo == null ? "" : item.buyerTaxNo;
+
+
                             item.checkStatus = "通过";
                             //火车票
                             if (item.invoiceType == "9")
@@ -165,11 +185,10 @@ namespace Invoice.Utils
                             {
                                 item.invoiceNo = item.electronicTicketNum;
                             }
-                            logjson = jsonstr;
-
+                            logjson = JsonConvert.SerializeObject(item);
                         }
-                        //识别只有飞机票有taxAmount
-                        if (item.invoiceType=="10")
+                        //只识别的发票，只有飞机票有taxAmount
+                        if (item.invoiceType == "10")
                         {
                             item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
                         }
@@ -177,13 +196,17 @@ namespace Invoice.Utils
                         {
                             item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
                         }
-
+                        //只有机动车有 taxrate ，覆盖验真的taxrate 用识别的taxrate
+                        if (item.invoiceType == "12")
+                        {
+                            item.taxRate = item.taxRate == null ? "" : item.taxRate;
+                        }
                         //验真状态
                         item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
                         item.checkDescription = recive.description == null ? "" : recive.description;
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
-                        InvoiceLogger.WriteToDB("发票验真成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                        InvoiceLogger.WriteToDB("发票识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                     }
                 }
                 else
@@ -193,7 +216,7 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
-                InvoiceLogger.WriteToDB(ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
+                InvoiceLogger.WriteToDB("发票识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
         }
@@ -370,7 +393,7 @@ namespace Invoice.Utils
         public string invoiceNo { get; set; }
         public string invoiceDate { get; set; }
 
-        
+
         public string invoiceMoney { get; set; }
         public string totalAmount { get; set; }
         public string checkCode { get; set; }
@@ -422,7 +445,7 @@ namespace Invoice.Utils
         public string checkDescription { get; set; }
         //////合并新项
         public string invoiceMoney { get; set; }
-        
+
         //火车票的
         public string printingSequenceNo { get; set; }
 
@@ -431,12 +454,14 @@ namespace Invoice.Utils
 
         //需要保存的状态                             
         public string cancelMark { get; set; }
+        public string taxRate { get; set; }
 
         //税率
         public List<TaxRate> items { get; set; }
     }
 
-    public  class TaxRate {
+    public class TaxRate
+    {
         public string taxRate { get; set; }
     }
     #endregion
