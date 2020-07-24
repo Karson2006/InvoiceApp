@@ -176,7 +176,11 @@ namespace Invoice.Utils
                                 //税率
                                 if (taxtype.Contains(item.invoiceType))
                                 {
-                                    item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                                    if (recive.data.items != null)
+                                    {
+                                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                                    }
+                                    
                                 }
                                 //发票代码转具体发票
                                 item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
