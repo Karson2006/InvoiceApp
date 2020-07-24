@@ -82,8 +82,7 @@ namespace Invoice.Utils
                     List<string> code = new List<string>() { "1200", "1214", "1301", "0006", "0009", "1005", "1008", "1009", "0313", "0314" };
                     foreach (InvoiceCheckDetail item in invoiceDisResult.data)
                     {
-                        //发票代码转具体发票
-                        item.invoiceType=Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+
 
 
                         jsonstr = "";
@@ -98,6 +97,7 @@ namespace Invoice.Utils
                         item.checkCode = item.checkCode == null ? "" : item.checkCode;
                         item.totalAmount = item.totalAmount == null ? "" : item.totalAmount;
                         item.taxRate = item.taxRate == null ? "" : item.taxRate;
+                        item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
                         //验真类型
                         if (authType.Contains(item.invoiceType))
                         {
@@ -158,10 +158,11 @@ namespace Invoice.Utils
                                 item.checkDescription = recive.description == null ? "" : recive.description;
                                 //税率
                                 if (taxtype.Contains(item.invoiceType))
-                                {                                    
-                                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                                {
+                                    item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
                                 }
-
+                                //发票代码转具体发票
+                                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                                 InvoiceLogger.WriteToDB("验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                             }
                             catch (Exception ex)
@@ -169,6 +170,8 @@ namespace Invoice.Utils
                                 item.checkErrcode = "10001";
                                 item.checkDescription = "验真异常发票";
                                 //添加发票
+                                //发票代码转具体发票
+                                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                                 invoiceCheckResult.CheckDetailList.Add(item);
                                 InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                                 continue;
@@ -186,7 +189,7 @@ namespace Invoice.Utils
                             item.amount = item.amount == null ? "" : item.amount;
                             item.buyerTaxNo = item.buyerTaxNo == null ? "" : item.buyerTaxNo;
                             item.checkErrcode = "0000";
-                            item.checkDescription = "不需要验真发票状态正常";
+                            item.checkDescription = "不验真发票状态正常";
 
                             item.checkStatus = "通过";
                             //火车票
@@ -199,18 +202,10 @@ namespace Invoice.Utils
                             {
                                 item.invoiceNo = item.electronicTicketNum;
                             }
+                            //发票代码转具体发票
+                            item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                             logjson = JsonConvert.SerializeObject(item);
                         }
-                        //只识别的发票，只有飞机票有taxAmount
-                        if (item.invoiceType == "10")
-                        {
-                            item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
-                        }
-                        else
-                        {
-                            item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
-                        }
-
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
                         InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
