@@ -75,6 +75,9 @@
     <None Include="Connected Services\OAAttachment\InvoiceUtils.OAAttachment.encryptResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Connected Services\OAAttachment\InvoiceUtils.OAAttachment.sayHelloWorldFromResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Connected Services\OAAttachment\main.xsd">
       <SubType>Designer</SubType>
     </None>

@@ -20,6 +20,12 @@
   <message name="decryptResponse">
     <part name="parameters" element="tns:decryptResponse" />
   </message>
+  <message name="sayHelloWorldFrom">
+    <part name="parameters" element="tns:sayHelloWorldFrom" />
+  </message>
+  <message name="sayHelloWorldFromResponse">
+    <part name="parameters" element="tns:sayHelloWorldFromResponse" />
+  </message>
   <portType name="AttMain">
     <operation name="encrypt">
       <input wsam:Action="http://OAAttach/AttMain/encryptRequest" message="tns:encrypt" />
@@ -30,6 +36,10 @@
       <input wsam:Action="http://OAAttach/AttMain/decryptRequest" message="tns:decrypt" />
       <output wsam:Action="http://OAAttach/AttMain/decryptResponse" message="tns:decryptResponse" />
       <fault wsam:Action="http://OAAttach/AttMain/decrypt/Fault/Exception" name="Exception" message="tns:Exception" />
+    </operation>
+    <operation name="sayHelloWorldFrom">
+      <input wsam:Action="http://OAAttach/AttMain/sayHelloWorldFromRequest" message="tns:sayHelloWorldFrom" />
+      <output wsam:Action="http://OAAttach/AttMain/sayHelloWorldFromResponse" message="tns:sayHelloWorldFromResponse" />
     </operation>
   </portType>
   <binding name="AttMainPortBinding" type="tns:AttMain">
@@ -57,6 +67,15 @@
       <fault name="Exception">
         <soap:fault use="literal" name="Exception" namespace="" />
       </fault>
+    </operation>
+    <operation name="sayHelloWorldFrom">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
     </operation>
   </binding>
   <service name="AttMainService">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="15ba6256-5378-4060-aec1-ed45614a19da" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="ef7e4b21-1e15-412d-be9a-c8e92be31584" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -22,8 +22,8 @@
     <MetadataSource Address="http://192.168.20.15:8990/OAAttach/main?wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="AttMainService.wsdl" MetadataType="Wsdl" ID="d9b117e3-7a69-4971-b452-1f15452d1aea" SourceId="1" SourceUrl="http://192.168.20.15:8990/OAAttach/main?wsdl" />
-    <MetadataFile FileName="main.xsd" MetadataType="Schema" ID="4c248e9b-be12-4bbe-a2e0-0bc1c51681a0" SourceId="1" SourceUrl="http://192.168.20.15:8990/OAAttach/main?xsd=1" />
+    <MetadataFile FileName="AttMainService.wsdl" MetadataType="Wsdl" ID="564b50dd-fd61-48ee-99a0-1d38ffd7bee4" SourceId="1" SourceUrl="http://192.168.20.15:8990/OAAttach/main?wsdl" />
+    <MetadataFile FileName="main.xsd" MetadataType="Schema" ID="1362ccba-ddcc-4df2-9955-f360690511f6" SourceId="1" SourceUrl="http://192.168.20.15:8990/OAAttach/main?xsd=1" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

@@ -66,6 +66,15 @@ namespace InvoiceUtils.OAAttachment {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://OAAttach/AttMain/decryptRequest", ReplyAction="http://OAAttach/AttMain/decryptResponse")]
         System.Threading.Tasks.Task<InvoiceUtils.OAAttachment.decryptResponse> decryptAsync(InvoiceUtils.OAAttachment.decryptRequest request);
+        
+        // CODEGEN: 参数“return”需要其他方案信息，使用参数模式无法捕获这些信息。特定特性为“System.Xml.Serialization.XmlElementAttribute”。
+        [System.ServiceModel.OperationContractAttribute(Action="http://OAAttach/AttMain/sayHelloWorldFromRequest", ReplyAction="http://OAAttach/AttMain/sayHelloWorldFromResponse")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [return: System.ServiceModel.MessageParameterAttribute(Name="return")]
+        InvoiceUtils.OAAttachment.sayHelloWorldFromResponse sayHelloWorldFrom(InvoiceUtils.OAAttachment.sayHelloWorldFromRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://OAAttach/AttMain/sayHelloWorldFromRequest", ReplyAction="http://OAAttach/AttMain/sayHelloWorldFromResponse")]
+        System.Threading.Tasks.Task<InvoiceUtils.OAAttachment.sayHelloWorldFromResponse> sayHelloWorldFromAsync(InvoiceUtils.OAAttachment.sayHelloWorldFromRequest request);
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -155,6 +164,42 @@ namespace InvoiceUtils.OAAttachment {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="sayHelloWorldFrom", WrapperNamespace="http://OAAttach/", IsWrapped=true)]
+    public partial class sayHelloWorldFromRequest {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://OAAttach/", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public string arg0;
+        
+        public sayHelloWorldFromRequest() {
+        }
+        
+        public sayHelloWorldFromRequest(string arg0) {
+            this.arg0 = arg0;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="sayHelloWorldFromResponse", WrapperNamespace="http://OAAttach/", IsWrapped=true)]
+    public partial class sayHelloWorldFromResponse {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://OAAttach/", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public string @return;
+        
+        public sayHelloWorldFromResponse() {
+        }
+        
+        public sayHelloWorldFromResponse(string @return) {
+            this.@return = @return;
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface AttMainChannel : InvoiceUtils.OAAttachment.AttMain, System.ServiceModel.IClientChannel {
     }
@@ -232,6 +277,29 @@ namespace InvoiceUtils.OAAttachment {
             inValue.arg0 = arg0;
             inValue.arg1 = arg1;
             return ((InvoiceUtils.OAAttachment.AttMain)(this)).decryptAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        InvoiceUtils.OAAttachment.sayHelloWorldFromResponse InvoiceUtils.OAAttachment.AttMain.sayHelloWorldFrom(InvoiceUtils.OAAttachment.sayHelloWorldFromRequest request) {
+            return base.Channel.sayHelloWorldFrom(request);
+        }
+        
+        public string sayHelloWorldFrom(string arg0) {
+            InvoiceUtils.OAAttachment.sayHelloWorldFromRequest inValue = new InvoiceUtils.OAAttachment.sayHelloWorldFromRequest();
+            inValue.arg0 = arg0;
+            InvoiceUtils.OAAttachment.sayHelloWorldFromResponse retVal = ((InvoiceUtils.OAAttachment.AttMain)(this)).sayHelloWorldFrom(inValue);
+            return retVal.@return;
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<InvoiceUtils.OAAttachment.sayHelloWorldFromResponse> InvoiceUtils.OAAttachment.AttMain.sayHelloWorldFromAsync(InvoiceUtils.OAAttachment.sayHelloWorldFromRequest request) {
+            return base.Channel.sayHelloWorldFromAsync(request);
+        }
+        
+        public System.Threading.Tasks.Task<InvoiceUtils.OAAttachment.sayHelloWorldFromResponse> sayHelloWorldFromAsync(string arg0) {
+            InvoiceUtils.OAAttachment.sayHelloWorldFromRequest inValue = new InvoiceUtils.OAAttachment.sayHelloWorldFromRequest();
+            inValue.arg0 = arg0;
+            return ((InvoiceUtils.OAAttachment.AttMain)(this)).sayHelloWorldFromAsync(inValue);
         }
     }
 }
