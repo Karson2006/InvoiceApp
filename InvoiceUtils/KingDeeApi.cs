@@ -62,6 +62,9 @@ namespace Invoice.Utils
             //二手车没有税率 12 机动车识别和验真都返回taxrate 另外判断
             List<string> taxtype
                 = new List<string> { "1", "2", "3", "4", "5", "15" };
+            List<string> errNoPermission = new List<string> { "0001", "1020" };
+            
+            List<string> errApi = new List<string> { "1119", "1006", "1101", "1132", "3109", "9999", "0005" };
             //识别 + json 查验
             InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
             try
@@ -124,7 +127,9 @@ namespace Invoice.Utils
                                 //保存到日志的验真结果
                                 logjson = jsonstr;
                                 recive = GetCheckResult(jsonstr);
-
+                                //验真状态 识别成功都有状态
+                                item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
+                                item.checkDescription = recive.description == null ? "" : recive.description;
                                 //判断查验结果
                                 if (recive.errcode == "0000")
                                 {
@@ -139,11 +144,24 @@ namespace Invoice.Utils
                                     if (code.Contains(recive.errcode))
                                     {
                                         item.checkStatus = "不通过";
+                                        item.checkErrcode = "10002";
+                                        item.checkDescription = "使用识别的发票数据验真不通过"+item.checkDescription;
+                                        
                                     }
                                     else
                                     {
                                         //不是发票问题
                                         item.checkStatus = "未查验";
+                                        //返回明显的错误描述
+                                        if (errNoPermission.Contains(recive.errcode))
+                                        {
+                                            item.checkDescription = item.checkDescription;
+                                        }
+                                        if (errApi.Contains(recive.errcode))
+                                        {
+                                            item.checkErrcode = "10003";
+                                            item.checkDescription = "无法正常使用api接口" + item.checkDescription;
+                                        }
                                     }
                                 }
                                 //避免验真不通过之后，获取null值发生异常
@@ -153,9 +171,7 @@ namespace Invoice.Utils
                                 item.amount = recive.data.amount == null ? "" : recive.data.amount;
                                 item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
                                 item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
-                                //验真状态 识别成功都有状态
-                                item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
-                                item.checkDescription = recive.description == null ? "" : recive.description;
+
                                 //税率
                                 if (taxtype.Contains(item.invoiceType))
                                 {
