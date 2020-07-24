@@ -82,6 +82,10 @@ namespace Invoice.Utils
                     List<string> code = new List<string>() { "1200", "1214", "1301", "0006", "0009", "1005", "1008", "1009", "0313", "0314" };
                     foreach (InvoiceCheckDetail item in invoiceDisResult.data)
                     {
+                        //发票代码转具体发票
+                        item.invoiceType=Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+
+
                         jsonstr = "";
                         //默认识别结果日志
                         logjson = disData;
@@ -221,7 +225,7 @@ namespace Invoice.Utils
             {
                 InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
                 throw ex;
-            }
+            }             
             return invoiceCheckResult;
         }
         //获取识别结果
