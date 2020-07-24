@@ -155,12 +155,13 @@ namespace Invoice.Utils
                                         //返回明显的错误描述
                                         if (errNoPermission.Contains(recive.errcode))
                                         {
+                                            item.checkErrcode = "0001";
                                             item.checkDescription = item.checkDescription;
                                         }
                                         if (errApi.Contains(recive.errcode))
                                         {
                                             item.checkErrcode = "10003";
-                                            item.checkDescription = "无法正常使用api接口" + item.checkDescription;
+                                            item.checkDescription = "发票查验接口无法正常使用" + item.checkDescription;
                                         }
                                     }
                                 }
@@ -234,8 +235,9 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
+                invoiceCheckResult.errcode = "20000";
+                invoiceCheckResult.description = "识别 + 验真时 异常" + ex.Message;
                 InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
-                throw ex;
             }             
             return invoiceCheckResult;
         }
