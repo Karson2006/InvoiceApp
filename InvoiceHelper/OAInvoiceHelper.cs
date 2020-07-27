@@ -41,7 +41,7 @@ namespace iTR.OP.Invoice
             string path="";
             string fileType="2";
             int chkCount = 0;
-
+            DateTime checkDate;
 
             try
             {
@@ -50,7 +50,7 @@ namespace iTR.OP.Invoice
 
                 //field0015发票代码为空、尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天
                 string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033 from formson_5248 
-                               Where    isnull(field0033,0)<=3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  and field0023 Not In('通过','不通过','重号')";
+                               Where    isnull(field0033,0)<=3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  and  isnull(field0023,'')   Not In('通过','不通过','重号')";
 
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
@@ -119,12 +119,15 @@ namespace iTR.OP.Invoice
                                 else
                                     amount = decimal.Parse(i.totalAmount);
 
+                                //设置查验日期
+                                checkDate = DateTime.Now;
+
                                 sql = @"update formson_5248 Set field0033= isnull(field0033,0)+1,field0015='{0}',field0016='{1}',field0017='{2}',
                                     field0018='{3}',field0019='{4}',field0021='{5}',field0022='{6}',field0023  ='{7}',
-                                    field0024='{8}',field0025='{9}',field0026='{10}',field0027='{7}',field0032='{11}',field0034='{12}'  Where ID={13}";
+                                    field0024='{8}',field0025='{9}',field0026='{10}',field0027='{7}',field0032='{11}',field0034='{12}' , field0042='{14}'  Where ID={13}";
                                 
                                 sql = string.Format(sql, i.invoiceCode, i.invoiceNo, i.invoiceDate, i.salerName, amount, i.buyerTaxNo, i.salerAccount,
-                                      i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID);
+                                      i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID, checkDate.ToString());
                                 
                                 runner.ExecuteSqlNone(sql);
                                 FileLogger.WriteLog( " 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
