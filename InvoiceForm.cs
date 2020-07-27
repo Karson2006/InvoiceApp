@@ -41,7 +41,7 @@ namespace InvoiceApp
             }
             catch (Exception err)
             {
-                FileLogger.WriteLog(err.Message, 2);
+                FileLogger.WriteLog(err.Message, 1,"InvoiceForm","Structure","DataService","ErrMeassag" );
             }
 
         }
@@ -50,7 +50,6 @@ namespace InvoiceApp
 
         private void btStart_Clik(object sender, EventArgs e)
         {
-            FileLogger.WriteLog((DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " Programm Start"),2);
            
             thd.IsBackground = true;
             thd.Start();
@@ -67,7 +66,7 @@ namespace InvoiceApp
                     string result = oa.Run();
                     if (int.Parse(result) > 0)
                     {
-                        FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "   成功处理" + result + "条表单发票记录。", 2);
+                        FileLogger.WriteLog( "成功处理", 1, "InvoiceForm", "ThreadAction", "DataService", "AppMessage");
                     }
 
 
@@ -75,7 +74,7 @@ namespace InvoiceApp
                 }
                 catch (Exception err)
                 {
-                    FileLogger.WriteLog(err.Message, 2);
+                    FileLogger.WriteLog(err.Message, 1, "InvoiceForm", "ThreadAction", "DataService", "ErrMessage");
                     System.Threading.Thread.Sleep(interval * 60 * 1000);
                 }
             }
@@ -124,8 +123,16 @@ namespace InvoiceApp
 
         private void btDebug_Click(object sender, EventArgs e)
         {
-            iTR.OP.Invoice.InvoiceHelper invoice = new InvoiceHelper();
-            InvoiceCheckResult result = invoice.Scan_Check(txFileName.Text,"1");
+            if (txFileName.Text.Trim().Length == 0)
+            {
+                MessageBox.Show("文件名称不能为空", "系统提示"); 
+            }
+            else
+            {
+                iTR.OP.Invoice.InvoiceHelper invoice = new InvoiceHelper();
+                InvoiceCheckResult result = invoice.Scan_Check(txFileName.Text, "1");
+            }
+            
         }
     }
 

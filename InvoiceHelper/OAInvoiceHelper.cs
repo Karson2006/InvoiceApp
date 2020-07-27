@@ -48,26 +48,25 @@ namespace iTR.OP.Invoice
                 InvoiceHelper invoice = new InvoiceHelper();
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
 
-                //field0015发票代码为空、尝试次数field0033少于3次，已经过了验证日期的
+                //field0015发票代码为空、尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天
                 string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033 from formson_5248 
-                               Where  ISNULL(field0015,'') ='' and isnull(field0033,0)<=3 and isnull(field0039,'') ='是'" ;
+                               Where    isnull(field0033,0)<=3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  and field0023 Not In('通过','不通过','重号')";
 
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 foreach(DataRow row in dt.Rows)
                 {
-                    string [] f= row["FileName"].ToString().Split('.');
-                    if(f[f.Length -1].ToUpper()=="PDF") fileType="1";
-                    
+                  
                     fileName = path +"\\"+ row["folder"].ToString()+ "\\" + row["FileID"].ToString();
 
                     chkCount = int.Parse(row["field0033"].ToString()) + 1;//设置检查次数
                     
                     InvoiceCheckResult chkResult = invoice.Scan_Check(fileName, fileType);
-                    FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " 处理文件：" + fileName, 2);
+                    FileLogger.WriteLog("调用接口成功文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
                     if(chkResult==null)//云接口调用报错，没有正常返回
                     {
-                        throw new Exception("调用发票云接口错误");
+                        FileLogger.WriteLog( "调用发票云接口错误：返回值为空 FileName:" +fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
+                        continue;
                     }
                     
                     if(chkResult.errcode=="0000")//操作成功
@@ -78,13 +77,14 @@ namespace iTR.OP.Invoice
                         foreach(InvoiceCheckDetail i in chkResult.CheckDetailList)//每张发票查验结果
                         {
                             rowID = row["ID"].ToString();
-                            if (i.invoiceType=="11")//不是发票,设置不是发票状态，以免下次还继续查验
+                            //类型为其他、发票号为空，不是发票,设置不是发票状态，以免下次还继续查验
+                            if (i.invoiceType=="其他" || i.invoiceNo.Trim().Length==0)
                             {
                                 sql = "Update formson_5248 Set field0039='否' Where ID='" + rowID + "'";
                                 runner.ExecuteSqlNone(sql);
                                 continue;
                             }
-                            if (i.invoiceNo.Trim().Length  > 0)
+                            if (i.invoiceNo.Trim().Length  > 0 )
                             {  
                                 decimal taxamout = 0;
                                 invoiceSeq = invoiceSeq + 1;
@@ -127,8 +127,7 @@ namespace iTR.OP.Invoice
                                       i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID);
                                 
                                 runner.ExecuteSqlNone(sql);
-
-                                FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " 成功处理发票号：" + i.invoiceNo, 2);
+                                FileLogger.WriteLog( " 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
                             }
                         }
                        
@@ -139,8 +138,7 @@ namespace iTR.OP.Invoice
                         sql = @"update formson_5248 Set field0033= {0}  Where ID={1}";
                         sql = string.Format(sql, chkCount, row["ID"].ToString());
                         runner.ExecuteSqlNone(sql);
- 
-                        FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " 处理文件：" + fileName + "错误" + chkResult.description, 2);
+                        FileLogger.WriteLog( " 处理文件：" + fileName + "错误" + chkResult.description, 1, "OAInvoicehelper", fileName, "DataService", "AppMessage");
                     }
                     result = dt.Rows.Count.ToString();
                 }
@@ -149,7 +147,7 @@ namespace iTR.OP.Invoice
             catch(Exception err)
             {
                 result = "-1";
-                throw err;
+                FileLogger.WriteLog( "Err:"  + err.Message,  1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
             }
 
             return result;

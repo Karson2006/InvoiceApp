@@ -49,8 +49,7 @@ namespace iTR.OP.Invoice
             }
             catch (System.Exception err)
             {
-                //throw err;
-                FileLogger.WriteLog(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "处理文件异常： " + err.Message, 2);
+                FileLogger.WriteLog("处理文件异常： " + err.Message,1,"InvoiceHelper","Check_Scan","DataService","ErrMessage");
             }
 
             return result;
