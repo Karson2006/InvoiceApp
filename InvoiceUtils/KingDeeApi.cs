@@ -63,7 +63,7 @@ namespace Invoice.Utils
             List<string> taxtype
                 = new List<string> { "1", "2", "3", "4", "5", "15" };
             List<string> errNoPermission = new List<string> { "0001", "1020" };
-            
+
             List<string> errApi = new List<string> { "1119", "1006", "1101", "1132", "3109", "9999", "0005" };
             //识别 + json 查验
             InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
@@ -80,7 +80,7 @@ namespace Invoice.Utils
                 //识别成功
                 if (invoiceDisResult.errcode == "0000")
                 {
-                    InvoiceLogger.WriteToDB("识别成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, disData);
+                    //  InvoiceLogger.WriteToDB("识别成功", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, disData);
                     //确定不通过的
                     List<string> code = new List<string>() { "1200", "1214", "1301", "0006", "0009", "1005", "1008", "1009", "0313", "0314" };
                     foreach (InvoiceCheckDetail item in invoiceDisResult.data)
@@ -104,7 +104,7 @@ namespace Invoice.Utils
                         //验真类型
                         if (authType.Contains(item.invoiceType))
                         {
-                            //纸质专用发票，机动车 用invoiceMoney 验真,其他用totalAmount
+                            //纸质专用发票，机动车 用invoiceMoney 验真,其他用totalAmount 避免校验码和金额同时为空
                             if (item.invoiceType != "4" && item.invoiceType != "12")
                             {
                                 item.invoiceMoney = item.totalAmount;
@@ -143,10 +143,38 @@ namespace Invoice.Utils
                                 {
                                     if (code.Contains(recive.errcode))
                                     {
+
+                                        if (item.checkErrcode == "0009")
+                                        {
+                                            item.checkDescription = "在官方数据库查不到此发票";
+                                        }
+                                        else if (item.checkErrcode == "1005")
+                                        {
+                                            item.checkDescription = "";
+                                            if (item.checkCode.Trim().Length==0)
+                                            {
+                                                item.checkDescription += " 发票检验码为空 ";
+                                            }
+                                            if (item.invoiceCode=="")
+                                            {
+                                                item.checkDescription += " 发票代码为空 ";
+                                            }
+                                            if (item.invoiceNo == "")
+                                            {
+                                                item.checkDescription += " 发票号码为空 ";
+                                            }
+                                            if (item.invoiceDate == "")
+                                            {
+                                                item.checkDescription += " 发票日期为空 ";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            item.checkDescription = "在官方数据库查不到此发票";
+                                        }
                                         item.checkStatus = "不通过";
+                                        //变成统一返回码
                                         item.checkErrcode = "10002";
-                                        item.checkDescription = "使用识别的发票数据验真不通过"+item.checkDescription;
-                                        
                                     }
                                     else
                                     {
@@ -161,8 +189,9 @@ namespace Invoice.Utils
                                         if (errApi.Contains(recive.errcode))
                                         {
                                             item.checkErrcode = "10003";
-                                            item.checkDescription = "发票查验接口无法正常使用" + item.checkDescription;
+                                            item.checkDescription = "发票查验接口异常";
                                         }
+                                        InvoiceLogger.WriteToDB("发票未查验", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                                     }
                                 }
                                 //避免验真不通过之后，获取null值发生异常
@@ -180,11 +209,11 @@ namespace Invoice.Utils
                                     {
                                         item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
                                     }
-                                    
+
                                 }
                                 //发票代码转具体发票
                                 item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
-                                InvoiceLogger.WriteToDB("验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
+                                // InvoiceLogger.WriteToDB("验真结果数据状态", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                             }
                             catch (Exception ex)
                             {
@@ -229,20 +258,20 @@ namespace Invoice.Utils
                         }
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
-                        InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                        //  InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                     }
                 }
-                else
-                {
-                    InvoiceLogger.WriteToDB("", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, JsonConvert.SerializeObject(invoiceCheckResult));
-                }
+                //else
+                //{
+                //    InvoiceLogger.WriteToDB("", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, JsonConvert.SerializeObject(invoiceCheckResult));
+                //}
             }
             catch (Exception ex)
             {
                 invoiceCheckResult.errcode = "20000";
                 invoiceCheckResult.description = "识别 + 验真时 异常" + ex.Message;
                 InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
-            }             
+            }
             return invoiceCheckResult;
         }
         //获取识别结果
