@@ -55,7 +55,7 @@ namespace Invoice.Utils
 
             string token = GetAccessToken();
             string jsonstr = "", logjson = "";
-
+            bool authflag = false;
 
             List<string> authType = new List<string> { "1", "2", "3", "4", "5", "12", "13", "15" };
 
@@ -63,7 +63,6 @@ namespace Invoice.Utils
             List<string> taxtype
                 = new List<string> { "1", "2", "3", "4", "5", "15" };
             List<string> errNoPermission = new List<string> { "0001", "1020" };
-
             List<string> errApi = new List<string> { "1119", "1006", "1101", "1132", "3109", "9999", "0005" };
             //识别 + json 查验
             InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
@@ -101,14 +100,85 @@ namespace Invoice.Utils
                         item.totalAmount = item.totalAmount == null ? "" : item.totalAmount;
                         item.taxRate = item.taxRate == null ? "" : item.taxRate;
                         item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
+
+                        //避免不需要验真的发票没有数据 获取null 发生异常 先赋值
+
+                        item.serialNo = item.serialNo == null ? "" : item.serialNo;
+                        item.salerName = item.salerName == null ? "" : item.salerName;
+                        item.salerAccount = item.salerAccount == null ? "" : item.salerAccount;
+                        item.amount = item.amount == null ? "" : item.amount;
+                        item.buyerTaxNo = item.buyerTaxNo == null ? "" : item.buyerTaxNo;
                         //验真类型
                         if (authType.Contains(item.invoiceType))
                         {
+                            authflag = false;
+                            //提前判断 如果查验条件不满足，不去验真
+                            if (item.invoiceNo.Trim().Length == 0)
+                            {
+                                authflag = true;
+                                item.checkDescription += " 发票号码识别为空 ";
+                            }
+                            if (item.invoiceCode.Trim().Length == 0)
+                            {
+                                authflag = true;
+                                item.checkDescription += " 发票代码识别为空 ";
+                            }
+
+                            if (item.invoiceDate.Trim().Length == 0)
+                            {
+                                authflag = true;
+                                item.checkDescription += " 发票日期识别为空 ";
+                            }
+                            //增值税普通发票、增值税电子普通发票（含通行费发票）、增值税普通发票(卷票)
+                            if (item.invoiceType == "1" || item.invoiceType == "3" || item.invoiceType == "5" || item.invoiceType == "15")
+                            {
+                                if (item.checkCode.Trim().Length == 0)
+                                {
+                                    authflag = true;
+                                    item.checkDescription += " 发票检验码识别为空 ";
+                                }
+                            }
+
+                            //机动车和 纸质专用发票必须要有 InvoiceMoney
+                            if (item.invoiceType == "2" || item.invoiceType == "4" || item.invoiceType == "12")
+                            {
+                                if (item.invoiceMoney.Trim().Length == 0)
+                                {
+                                    authflag = true;
+                                    item.checkDescription += " 不含税金额识别为空 ";
+                                }
+                            }
+                            // 二手车
+                            if (item.invoiceType == "13")
+                            {
+                                if (item.totalAmount.Trim().Length == 0)
+                                {
+                                    item.checkDescription += " 车价合计识别为空 ";
+                                }
+                            }
+                            //必须同时满足几个条件
+                            if (authflag)
+                            {
+                                //发票代码转具体发票
+                                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                                item.checkErrcode = "10002";
+                                item.checkStatus = "不通过";
+                                item.checkDescription += "，请确认是否是完整发票图片，且发票元素清晰可见";
+                                //添加发票
+                                invoiceCheckResult.CheckDetailList.Add(item);
+
+                                InvoiceLogger.WriteToDB("发票查验条件不满足", "", "", fileName, logjson, item.invoiceType);
+                                //条件不满足 进行下一个
+                                continue;
+                            }
                             //纸质专用发票，机动车 用invoiceMoney 验真,其他用totalAmount 避免校验码和金额同时为空
                             if (item.invoiceType != "4" && item.invoiceType != "12")
                             {
                                 item.invoiceMoney = item.totalAmount;
                             }
+
+
+
                             //验真用另一个数据结构
                             AuthData authData = new AuthData();
 
@@ -143,38 +213,34 @@ namespace Invoice.Utils
                                 {
                                     if (code.Contains(recive.errcode))
                                     {
-
-                                        if (item.checkErrcode == "0009")
+                                        if (item.checkErrcode == "0006")
                                         {
-                                            item.checkDescription = "在官方数据库查不到此发票";
+                                            item.checkDescription = "请确认是否是发票，且发票代码，发票号码，发票日期，发票校验码各项元素清晰可见";
+                                        }
+                                        else if (item.checkErrcode == "0313")
+                                        {
+                                            item.checkDescription = "发票日期格式不正确,确认发票日期清晰可见，且没有打印错位";
                                         }
                                         else if (item.checkErrcode == "1005")
                                         {
-                                            item.checkDescription = "";
-                                            if (item.checkCode.Trim().Length==0)
-                                            {
-                                                item.checkDescription += " 发票检验码为空 ";
-                                            }
-                                            if (item.invoiceCode=="")
-                                            {
-                                                item.checkDescription += " 发票代码为空 ";
-                                            }
-                                            if (item.invoiceNo == "")
-                                            {
-                                                item.checkDescription += " 发票号码为空 ";
-                                            }
-                                            if (item.invoiceDate == "")
-                                            {
-                                                item.checkDescription += " 发票日期为空 ";
-                                            }
+                                            item.checkDescription = "发票元素打印错位或者不是完整发票图片，无法正确识别到发票代码，发票号码，发票日期，发票校验码至少其中一项元素";
                                         }
                                         else
                                         {
-                                            item.checkDescription = "在官方数据库查不到此发票";
+                                            //变成统一返回码
+                                            item.checkErrcode = "10002";
+                                            if (item.invoiceType == "2" || item.invoiceType == "4" || item.invoiceType == "12")
+                                            {
+                                                item.checkDescription = "在官方数据库查不到此发票（请确认发票号码，发票代码，发票日期，不含税金额各项元素是否清晰可见）";
+                                            }
+                                            else
+                                            {
+                                                item.checkDescription = "在官方数据库查不到此发票（请确认发票校验码，发票号码，发票代码，发票日期，各项元素是否清晰可见）";
+                                            }
+                                            
                                         }
                                         item.checkStatus = "不通过";
-                                        //变成统一返回码
-                                        item.checkErrcode = "10002";
+
                                     }
                                     else
                                     {
@@ -184,12 +250,16 @@ namespace Invoice.Utils
                                         if (errNoPermission.Contains(recive.errcode))
                                         {
                                             item.checkErrcode = "0001";
-                                            item.checkDescription = item.checkDescription;
+                                            item.checkDescription = "应用没有查验权限";
                                         }
-                                        if (errApi.Contains(recive.errcode))
+                                        else if (errApi.Contains(recive.errcode))
                                         {
                                             item.checkErrcode = "10003";
-                                            item.checkDescription = "发票查验接口异常";
+                                            item.checkDescription = "发票查验接口无法正常使用:" + item.checkDescription;
+                                        }
+                                        else if (item.checkErrcode == "1004")
+                                        {
+                                            item.checkDescription = "余额不足，已超过最大查验量";
                                         }
                                         InvoiceLogger.WriteToDB("发票未查验", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                                     }
@@ -230,14 +300,7 @@ namespace Invoice.Utils
 
                         //不用验真的
                         else
-                        {
-                            //避免不需要验真的发票没有数据 获取null 发生异常
-
-                            item.serialNo = item.serialNo == null ? "" : item.serialNo;
-                            item.salerName = item.salerName == null ? "" : item.salerName;
-                            item.salerAccount = item.salerAccount == null ? "" : item.salerAccount;
-                            item.amount = item.amount == null ? "" : item.amount;
-                            item.buyerTaxNo = item.buyerTaxNo == null ? "" : item.buyerTaxNo;
+                        {    
                             item.checkErrcode = "0000";
                             item.checkDescription = "不验真发票状态正常";
 
@@ -261,10 +324,15 @@ namespace Invoice.Utils
                         //  InvoiceLogger.WriteToDB("识别+验真完成", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                     }
                 }
-                //else
-                //{
-                //    InvoiceLogger.WriteToDB("", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, JsonConvert.SerializeObject(invoiceCheckResult));
-                //}
+                else
+                {
+                    if (invoiceCheckResult.errcode== "10300")
+                    {
+                        invoiceCheckResult.description = "发票串号";
+                    }
+                   // InvoiceLogger.WriteToDB("", invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, JsonConvert.SerializeObject(invoiceCheckResult));
+                }
+
             }
             catch (Exception ex)
             {
