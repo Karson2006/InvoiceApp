@@ -144,7 +144,7 @@ namespace Invoice.Utils
                             {
                                 if (item.invoiceMoney.Trim().Length == 0)
                                 {
-                                    authflag = true;
+                                    authflag = true; 
                                     item.checkDescription += " 不含税金额识别为空 ";
                                 }
                             }
@@ -153,6 +153,7 @@ namespace Invoice.Utils
                             {
                                 if (item.totalAmount.Trim().Length == 0)
                                 {
+                                    authflag = true;
                                     item.checkDescription += " 车价合计识别为空 ";
                                 }
                             }
