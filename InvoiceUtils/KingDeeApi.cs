@@ -220,10 +220,6 @@ namespace Invoice.Utils
                                         {
                                             item.checkDescription = "请确认是否是发票，且发票代码，发票号码，发票日期，发票校验码各项元素清晰可见";
                                         }
-                                        else if (item.checkErrcode == "0313")
-                                        {
-                                            item.checkDescription = "发票日期格式不正确,确认发票日期清晰可见，且没有打印错位";
-                                        }
                                         else if (item.checkErrcode == "1005")
                                         {
                                             item.checkDescription = "发票元素打印错位或者不是完整发票图片，无法正确识别到发票代码，发票号码，发票日期，发票校验码至少其中一项元素";
@@ -240,7 +236,10 @@ namespace Invoice.Utils
                                             {
                                                 item.checkDescription = "在官方数据库查不到此发票（请确认发票校验码，发票号码，发票代码，发票日期，各项元素是否清晰可见）";
                                             }
-                                            
+                                            if (item.checkErrcode == "0313")
+                                            {
+                                                item.checkDescription = "发票日期格式不正确,确认发票日期清晰可见，且没有打印错位";
+                                            }
                                         }
                                         item.checkStatus = "不通过";
                                         InvoiceLogger.WriteToDB("查验不通过", invoiceCheckResult.errcode, recive.errcode, recive.description, fileName, logjson, item.invoiceType);
