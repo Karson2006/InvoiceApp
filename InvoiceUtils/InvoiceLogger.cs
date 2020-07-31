@@ -15,11 +15,11 @@ namespace Invoice.Utils
     public class InvoiceLogger
     {
 
-        public static void WriteToDB(string log, string fErrorCode = "", string fDescription = "", string fFileName = "", string fJsonData = "", string fInvoiceType = "", string type = "InvoiceMessage", string caller = "", string method = "")
+        public static void WriteToDB(string log, string fErrorCode = "",string fCheckErrcode="", string fDescription = "", string fFileName = "", string fJsonData = "", string fInvoiceType = "", string type = "InvoiceMessage", string caller = "", string method = "")
         {
             try
             {
-                string sql = $"Insert Into [DataService].[dbo].[InvoiceLogs](FLog,FErrorCode,FDescription,FFileName,FJsonData,FInvoiceType,FCaller,FMethod)Values('{log}','{fErrorCode}','{fDescription}','{fFileName}','{fJsonData}','{fInvoiceType}','{caller}','{method}')";
+                string sql = $"Insert Into [DataService].[dbo].[InvoiceLogs](FLog,FErrorCode,FCheckErrcode,FDescription,FFileName,FJsonData,FInvoiceType,FCaller,FMethod)Values('{log}','{fErrorCode}','{fCheckErrcode}','{fDescription}','{fFileName}','{fJsonData}','{fInvoiceType}','{caller}','{method}')";
                 SQLServerHelper runner = new SQLServerHelper();
                 runner.ExecuteSqlNone(sql);
                 runner = null;

@@ -101,7 +101,7 @@ namespace Invoice.Utils
                         item.taxRate = item.taxRate == null ? "" : item.taxRate;
                         item.taxAmount = item.taxAmount == null ? "" : item.taxAmount;
 
-                        //避免不需要验真的发票没有数据 获取null 发生异常 先赋值
+                        //不需要验真发票必须初始化的值
 
                         item.serialNo = item.serialNo == null ? "" : item.serialNo;
                         item.salerName = item.salerName == null ? "" : item.salerName;
@@ -168,7 +168,7 @@ namespace Invoice.Utils
                                 //添加发票
                                 invoiceCheckResult.CheckDetailList.Add(item);
 
-                                InvoiceLogger.WriteToDB("发票查验条件不满足", "", "", fileName, logjson, item.invoiceType);
+                                InvoiceLogger.WriteToDB("发票查验条件不满足", $"{invoiceCheckResult.errcode}", "", $"{invoiceCheckResult.description}",  fileName, logjson, item.invoiceType);
                                 //条件不满足 进行下一个
                                 continue;
                             }
@@ -212,6 +212,8 @@ namespace Invoice.Utils
                                 }
                                 else
                                 {
+                                    //发票代码转具体发票
+                                    item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                                     if (code.Contains(recive.errcode))
                                     {
                                         if (item.checkErrcode == "0006")
@@ -241,7 +243,7 @@ namespace Invoice.Utils
                                             
                                         }
                                         item.checkStatus = "不通过";
-
+                                        InvoiceLogger.WriteToDB("查验不通过", invoiceCheckResult.errcode, recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                                     }
                                     else
                                     {
@@ -262,7 +264,7 @@ namespace Invoice.Utils
                                         {
                                             item.checkDescription = "余额不足，已超过最大查验量";
                                         }
-                                        InvoiceLogger.WriteToDB("发票未查验", recive.errcode, recive.description, fileName, logjson, item.invoiceType);
+                                        InvoiceLogger.WriteToDB("发票未查验", invoiceCheckResult.errcode, recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                                     }
                                 }
                                 //避免验真不通过之后，获取null值发生异常
@@ -294,7 +296,7 @@ namespace Invoice.Utils
                                 //发票代码转具体发票
                                 item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                                 invoiceCheckResult.CheckDetailList.Add(item);
-                                InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                                InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, "",invoiceCheckResult.description, fileName, logjson, item.invoiceType);
                                 continue;
                             }
                         }
@@ -339,7 +341,7 @@ namespace Invoice.Utils
             {
                 invoiceCheckResult.errcode = "20000";
                 invoiceCheckResult.description = "识别 + 验真时 异常" + ex.Message;
-                InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode, invoiceCheckResult.description, fileName);
+                InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode,"", invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
         }
