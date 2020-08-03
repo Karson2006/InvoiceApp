@@ -124,6 +124,7 @@ namespace Invoice.Utils
                             item.checkDescription = "发票串号";
                             //添加发票
                             invoiceCheckResult.CheckDetailList.Add(item);
+                            invoiceCheckResult.description = "操作成功";
                             //修改操作码
                             invoiceCheckResult.errcode = "0000";
                             InvoiceLogger.WriteToDB("发票串号", $"{invoiceCheckResult.errcode}", "", $"{invoiceCheckResult.description}", fileName, logjson, item.invoiceType);
