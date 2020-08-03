@@ -225,7 +225,28 @@ namespace Invoice.Utils
                                 //验真状态 识别成功都有状态
                                 item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
                                 item.checkDescription = recive.description == null ? "" : recive.description;
-                                //判断查验结果
+                                //避免验真不通过之后，获取null值发生异常
+                                item.serialNo = recive.data.serialNo == null ? "" : recive.data.serialNo;
+                                item.salerName = recive.data.salerName == null ? "" : recive.data.salerName;
+                                item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
+                                item.amount = recive.data.amount == null ? "" : recive.data.amount;
+                                item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
+                                item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
+
+                                //税率
+                                if (taxtype.Contains(item.invoiceType))
+                                {
+                                    if (recive.data.items != null)
+                                    {
+                                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                                    }
+
+                                }
+
+
+                                //发票代码转具体发票
+                                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                                //设置查验结果
                                 if (recive.errcode == "0000")
                                 {
                                     if (recive.data.cancelMark == "N")
@@ -241,8 +262,7 @@ namespace Invoice.Utils
                                 }
                                 else
                                 {
-                                    //发票代码转具体发票
-                                    item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+
                                     //不通过的
                                     if (noPass.Contains(recive.errcode))
                                     {
@@ -265,25 +285,9 @@ namespace Invoice.Utils
                                     }
                                     InvoiceLogger.WriteToDB("查验未通过", invoiceCheckResult.errcode, recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                                 }
-                                //避免验真不通过之后，获取null值发生异常
-                                item.serialNo = recive.data.serialNo == null ? "" : recive.data.serialNo;
-                                item.salerName = recive.data.salerName == null ? "" : recive.data.salerName;
-                                item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
-                                item.amount = recive.data.amount == null ? "" : recive.data.amount;
-                                item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
-                                item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
 
-                                //税率
-                                if (taxtype.Contains(item.invoiceType))
-                                {
-                                    if (recive.data.items != null)
-                                    {
-                                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
-                                    }
-
-                                }
-                                //发票代码转具体发票
-                                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                                ////发票代码转具体发票
+                                //item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                             }
                             catch (Exception ex)
                             {
