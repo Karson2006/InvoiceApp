@@ -328,13 +328,16 @@ namespace Invoice.Utils
 
                     }
                 }
-
+                else
+                {
+                    InvoiceLogger.WriteToDB("识别非正常情况日志", invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName,disData);
+                }
             }
             catch (Exception ex)
             {
                 invoiceCheckResult.errcode = "20000";
-                invoiceCheckResult.description = "识别 + 验真时 异常" + ex.Message;
-                InvoiceLogger.WriteToDB("识别 + 验真 异常:" + ex.Message, invoiceCheckResult.errcode,"", invoiceCheckResult.description, fileName);
+                invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                InvoiceLogger.WriteToDB("识别验真时发生异常:" + ex.Message, invoiceCheckResult.errcode,"", invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
         }
