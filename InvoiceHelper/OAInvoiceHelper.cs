@@ -186,12 +186,12 @@ namespace iTR.OP.Invoice
                             Process.GetCurrentProcess().Kill();
                             #endregion
                             break;
-                        case "0310"://调用接口发生异常
-                            #region 调用接口错误处理
-                            Process.GetCurrentProcess().Kill();
-                            //result = "退出App";
-                            #endregion
-                            break;
+                        //case "0310"://调用接口发生异常
+                        //    #region 调用接口错误处理
+                        //    //Process.GetCurrentProcess().Kill();
+                        //    //result = "退出App";
+                        //    #endregion
+                        //    break;
                     }
                     
                     //根据接口返回情况，处理发票数据库记录
