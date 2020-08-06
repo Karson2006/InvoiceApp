@@ -41,11 +41,23 @@ namespace iTR.OP.Invoice
                 //若没有解过密，再先解密
                 if(!File.Exists(decryptFileName))
                 {
-                    EncrptionUtil.AttDecrypt(fileName, decryptFileName);
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(fileName);
+
+                    if (fileInfo.Length > 1024 * 1024 * 4)
+                    {
+                        result = new InvoiceCheckResult();
+                        result.errcode = "333333";
+                        result.description = "附件大小超过4M";
+                    }
+                    else
+                    {
+                        EncrptionUtil.AttDecrypt(fileName, decryptFileName);
+
+                        byte[] bytes = bytes = GetBytesByPath(decryptFileName);
+                        string base64String = Convert.ToBase64String(bytes);
+                        result = KingDeeApi.Check(fileName, base64String);
+                    }
                 }
-                byte[] bytes = bytes = GetBytesByPath(decryptFileName);
-                string base64String = Convert.ToBase64String(bytes);
-                result = KingDeeApi.Check(fileName, base64String);
             }
             catch (System.Exception err)
             {

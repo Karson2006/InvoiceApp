@@ -43,16 +43,17 @@ namespace iTR.OP.Invoice
             string fileType="2";
             int chkCount = 0;
             DateTime checkDate;
-
+            FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             try
             {
+
                 InvoiceHelper invoice = new InvoiceHelper();
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
 
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
                 string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033 from formson_5248 
                                         Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  and  isnull(field0023,'')   Not In('通过','不通过','重号')
-                                         and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  field0014 <='" + DateTime.Now.ToString()+"'" ;
+                                         and  field0042<='" + DateTime.Now.ToString()+"'";// and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') 
 
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
@@ -162,7 +163,7 @@ namespace iTR.OP.Invoice
 
                                 case "1014"://当天票不能查验，,查验次数+1
                                     checkDate = DateTime.Now; 
-                                      sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0017 ='{2}',field0025='{4}',field0024 ='{5}'   Where ID={3}";
+                                     sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0017 ='{2}',field0025='{4}',field0024 ='{5}'   Where ID={3}";
                                     sql = string.Format(sql, chkCount, checkDate.AddDays(1) , checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
                                     runner.ExecuteSqlNone(sql);
                                     break;
@@ -170,11 +171,8 @@ namespace iTR.OP.Invoice
                                     Process.GetCurrentProcess().Kill();
                                     break;
                                 default://10001,
-                                    chkCount = 3;
                                     checkDate = DateTime.Now;
-                                    sql = @"update fomson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}'  Where ID={2}";
-                                    sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
-                                    runner.ExecuteSqlNone(sql);
+                                    SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
                                     break;
                                
                             }
@@ -188,8 +186,14 @@ namespace iTR.OP.Invoice
                             break;
                         case "0310"://调用接口发生异常
                             #region 调用接口错误处理
-                            Process.GetCurrentProcess().Kill();
-                            //result = "退出App";
+                            checkDate = DateTime.Now;
+                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
+                            #endregion
+                            break;
+                        case "333333"://调用接口发生异常
+                            #region 调用接口错误处理
+                            checkDate = DateTime.Now;
+                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
                             #endregion
                             break;
                     }
@@ -206,7 +210,7 @@ namespace iTR.OP.Invoice
                
                 FileLogger.WriteLog( "Err:"  + err.Message,  1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
             }
-
+            FileLogger.WriteLog("结束发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             return result;
         }
 
@@ -225,6 +229,16 @@ namespace iTR.OP.Invoice
             }
             return result;
         }
+        private void SetInvoceCheckStatus(string invoceIID,DateTime checkDate, int chkCount = 3,string errdescription = "",string errCode="")
+        {
+            string sql = "";
+            SQLServerHelper runner = new SQLServerHelper();
+
+            sql = @"update fomson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}'  Where ID={2}";
+            sql = string.Format(sql, chkCount, checkDate, invoceIID, errdescription, errCode);
+            runner.ExecuteSqlNone(sql);
+        }
+
         
     }
 }
