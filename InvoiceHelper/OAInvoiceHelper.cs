@@ -190,8 +190,8 @@ namespace iTR.OP.Invoice
                             SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
                             #endregion
                             break;
-                        case "333333"://调用接口发生异常
-                            #region 调用接口错误处理
+                        case "333333"://附件超大
+                            #region 附件超大
                             checkDate = DateTime.Now;
                             SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
                             #endregion
@@ -234,7 +234,7 @@ namespace iTR.OP.Invoice
             string sql = "";
             SQLServerHelper runner = new SQLServerHelper();
 
-            sql = @"update fomson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}'  Where ID={2}";
+            sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}'  Where ID={2}";
             sql = string.Format(sql, chkCount, checkDate, invoceIID, errdescription, errCode);
             runner.ExecuteSqlNone(sql);
         }
