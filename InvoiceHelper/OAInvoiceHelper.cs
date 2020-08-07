@@ -116,7 +116,7 @@ namespace iTR.OP.Invoice
                                             else//文件中有多张发票,先插入新纪录（先判断是否存在，不存在则插入）
                                             {
                                                 //先判断相应的多张发票记录已存在
-                                                sql = "Select ID from formson_5248 Where field0020='{0}' and field0016 ='{1}'";
+                                                sql = "Select ID from formson_5248 Where field0020='{0}' and isnull(field0016,'') ='{1}'";
                                                 sql = string.Format(sql, row["FileID"].ToString(), i.invoiceCode);
                                                 dt1 = runner.ExecuteSql(sql);
                                                 if (dt1.Rows.Count == 0)//文件中多张发票不存在，则插入
