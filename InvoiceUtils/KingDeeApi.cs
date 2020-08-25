@@ -67,12 +67,14 @@ namespace Invoice.Utils
         /// <param name="money">不含税金额</param>
         /// <param name="checkCode">校验码后六位</param>
         /// <returns></returns>
-        public static InvoiceCheckDetail ManualCheck(string code, string no, string date, string money, string checkCode)
+        public static InvoiceCheckResult ManualCheck(string code, string no, string date, string money, string checkCode)
         {
             //验真用另一个数据结构
             AuthData authData = new AuthData();
             InvoiceCheckDetail invoiceCheckDetail = new InvoiceCheckDetail();
-            InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult();
+            InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList  = new List<InvoiceCheckDetail>()};
+            invoiceCheckResult.errcode = "0000";
+            invoiceCheckResult.description = "手动验真正常";
             string logjson = "";
             string jsonstr = "";
             string token;
@@ -98,12 +100,12 @@ namespace Invoice.Utils
                 }
                 catch (Exception ex)
                 {
-                    invoiceCheckDetail.checkCode = "20000";
+                    invoiceCheckResult.errcode = "20000";
                     invoiceCheckDetail.checkDescription = "验真时异常";
                 }
             }
-
-            return invoiceCheckDetail;
+            invoiceCheckResult.CheckDetailList.Add(invoiceCheckDetail);
+            return invoiceCheckResult;
         }
 
         private static InvoiceCheckDetail KingdeeCheck(string token, ref InvoiceCheckDetail item, AuthData authData, ref string logjson, ref string jsonstr, ref InvoiceCheckResult invoiceCheckResult, int type, string fileName = "")
@@ -133,7 +135,7 @@ namespace Invoice.Utils
                 //手动查验没有识别数据
                 if (type == 2)
                 {
-                    item.invoiceType = recive.data.invoiceType;
+                    item.invoiceType = recive.data.invoiceType == null?"" : recive.data.invoiceType;
                     item.invoiceCode = recive.data.invoiceCode == null ? "" : recive.data.invoiceCode;
                     item.invoiceNo = recive.data.invoiceNo == null ? "" : recive.data.invoiceNo;
                     item.invoiceDate = recive.data.invoiceDate == null ? "" : recive.data.invoiceDate;
@@ -147,7 +149,7 @@ namespace Invoice.Utils
                     item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
                     item.amount = recive.data.amount == null ? "" : recive.data.amount;
                     item.electronicTicketNum = recive.data.electronicTicketNum == null ? "" : recive.data.electronicTicketNum;
-                    item.electronicTicketNum = recive.data.printingSequenceNo == null ? "" : recive.data.printingSequenceNo;
+                    item.printingSequenceNo = recive.data.printingSequenceNo == null ? "" : recive.data.printingSequenceNo;
 
                 }
                 item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
@@ -252,13 +254,6 @@ namespace Invoice.Utils
                     for (int i = 0; i < invoiceDisResult.data.Count; i++)
                     {
                         InvoiceCheckDetail item = invoiceDisResult.data[i];
-                        //}
-
-                        //foreach (InvoiceCheckDetail item in invoiceDisResult.data)
-                        //{
-
-
-
                         jsonstr = "";
                         //默认识别结果日志
                         logjson = disData;
