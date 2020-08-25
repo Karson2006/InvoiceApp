@@ -30,32 +30,39 @@ namespace iTR.OP.Invoice
         /// <param name="fileType">1:PDF</param>
         /// <param name="timeOutSecond"></param>
         /// <returns></returns>
-        public InvoiceCheckResult Scan_Check(string fileName, string fileType, int timeOutSecond = 8)
+        public InvoiceCheckResult Scan_Check(string fileName, string fileType, int timeOutSecond = 8,string mode="1", Dictionary<string,string> param=null)
         {
             InvoiceCheckResult result = null;
 
             try
             {
-                //解密后的文件名
-                string decryptFileName = fileName + "_D";
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(fileName);
-
-                if (fileInfo.Length > 1024 * 1024 * 4)
+                if (mode == "1")
                 {
-                    result = new InvoiceCheckResult();
-                    result.errcode = "333333";
-                    result.description = "附件大小超过4M";
+                    //解密后的文件名
+                    string decryptFileName = fileName + "_D";
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(fileName);
+
+                    if (fileInfo.Length > 1024 * 1024 * 4)
+                    {
+                        result = new InvoiceCheckResult();
+                        result.errcode = "333333";
+                        result.description = "附件大小超过4M";
+                    }
+                    else
+                    {
+                        //若没有解过密，再先解密
+                        if (!File.Exists(decryptFileName))
+                        {
+                            EncrptionUtil.AttDecrypt(fileName, decryptFileName);
+                        }
+                        byte[] bytes = bytes = GetBytesByPath(decryptFileName);
+                        string base64String = Convert.ToBase64String(bytes);
+                        result = KingDeeApi.Check(fileName, base64String);
+                    }
                 }
                 else
                 {
-                    //若没有解过密，再先解密
-                    if (!File.Exists(decryptFileName))
-                    {
-                        EncrptionUtil.AttDecrypt(fileName, decryptFileName);
-                    }
-                    byte[] bytes = bytes = GetBytesByPath(decryptFileName);
-                    string base64String = Convert.ToBase64String(bytes);
-                    result = KingDeeApi.Check(fileName, base64String);
+                    result=KingDeeApi.ManualCheck(param["InvoiceCode"], param["InvoiceNo"], param["InvoiceDate"], param["InvoiceMoney"], param["InvoieCheckCode"])
                 }
             }
             catch (System.Exception err)
