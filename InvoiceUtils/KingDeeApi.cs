@@ -58,6 +58,15 @@ namespace Invoice.Utils
             }
             return accessToken;
         }
+        /// <summary>
+        /// 手动查验发票方法
+        /// </summary>
+        /// <param name="code">发票代码</param>
+        /// <param name="no">发票号码</param>
+        /// <param name="date">发票日期</param>
+        /// <param name="money">不含税金额</param>
+        /// <param name="checkCode">校验码后六位</param>
+        /// <returns></returns>
         public static InvoiceCheckDetail ManualCheck(string code, string no, string date, string money, string checkCode)
         {
             //验真用另一个数据结构
@@ -578,7 +587,7 @@ namespace Invoice.Utils
         public string errcode { get; set; }
         public string description { get; set; }
 
-        public List<InvoiceCheckDetail> data = null;
+         public List<InvoiceCheckDetail> data = null;
     }
 
 
@@ -617,13 +626,12 @@ namespace Invoice.Utils
     /// </summary>
     public class InvoiceCheckDetail
     {
-        /// <summary>
-        /// 发票流水号
-        /// </summary>
+ 
+
+        // 发票流水号
+ 
         public string serialNo { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
+ 
         public string invoiceCode { get; set; }
         public string invoiceNo { get; set; }
         public string invoiceDate { get; set; }
@@ -653,6 +661,8 @@ namespace Invoice.Utils
 
         //税率
         public List<TaxRate> items { get; set; }
+
+        public string Note { get; set; }
     }
 
     public class TaxRate
