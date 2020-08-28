@@ -72,7 +72,7 @@ namespace Invoice.Utils
             //验真用另一个数据结构
             AuthData authData = new AuthData();
             InvoiceCheckDetail invoiceCheckDetail = new InvoiceCheckDetail();
-            InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList  = new List<InvoiceCheckDetail>()};
+            InvoiceCheckResult invoiceCheckResult = new InvoiceCheckResult() { CheckDetailList = new List<InvoiceCheckDetail>() };
             invoiceCheckResult.errcode = "0000";
             invoiceCheckResult.description = "手动验真正常";
             string logjson = "";
@@ -92,7 +92,7 @@ namespace Invoice.Utils
                     authData.invoiceCode = code;
                     authData.invoiceNo = no;
                     authData.invoiceDate = date;
-                    authData.invoiceMoney = money;                  
+                    authData.invoiceMoney = money;
                     authData.checkCode = checkCode;
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
@@ -134,7 +134,7 @@ namespace Invoice.Utils
                 //手动查验没有识别数据
                 if (type == 2)
                 {
-                    item.invoiceType = recive.data.invoiceType == null?"" : recive.data.invoiceType;
+                    item.invoiceType = recive.data.invoiceType == null ? "" : recive.data.invoiceType;
                     item.invoiceCode = recive.data.invoiceCode == null ? "" : recive.data.invoiceCode;
                     item.invoiceNo = recive.data.invoiceNo == null ? "" : recive.data.invoiceNo;
                     item.invoiceDate = recive.data.invoiceDate == null ? "" : recive.data.invoiceDate;
@@ -162,7 +162,7 @@ namespace Invoice.Utils
 
                 }
 
-                if (item.invoiceType.Trim().Length!=0)
+                if (item.invoiceType.Trim().Length != 0)
                 {
                     //发票代码转具体发票
                     item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
@@ -590,7 +590,7 @@ namespace Invoice.Utils
         public string errcode { get; set; }
         public string description { get; set; }
 
-         public List<InvoiceCheckDetail> data = null;
+        public List<InvoiceCheckDetail> data = null;
     }
 
 
@@ -629,12 +629,12 @@ namespace Invoice.Utils
     /// </summary>
     public class InvoiceCheckDetail
     {
- 
+
 
         // 发票流水号
- 
+
         public string serialNo { get; set; }
- 
+
         public string invoiceCode { get; set; }
         public string invoiceNo { get; set; }
         public string invoiceDate { get; set; }
