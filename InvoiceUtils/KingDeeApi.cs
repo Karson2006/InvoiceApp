@@ -418,6 +418,8 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
+                //有时候基础连接会已被意外关闭，接口下次可以正常查验
+
                 invoiceCheckResult.errcode = "20000";
                 invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
                 InvoiceLogger.WriteToDB("识别验真时发生异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName);
