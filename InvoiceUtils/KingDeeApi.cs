@@ -92,8 +92,7 @@ namespace Invoice.Utils
                     authData.invoiceCode = code;
                     authData.invoiceNo = no;
                     authData.invoiceDate = date;
-                    authData.invoiceMoney = money;
-                    authData.invoiceMoney = money;                    
+                    authData.invoiceMoney = money;                  
                     authData.checkCode = checkCode;
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
@@ -101,7 +100,7 @@ namespace Invoice.Utils
                 catch (Exception ex)
                 {
                     invoiceCheckResult.errcode = "20000";
-                    invoiceCheckDetail.checkDescription = "验真时异常";
+                    invoiceCheckResult.description = "验真时异常";
                 }
             }
             invoiceCheckResult.CheckDetailList.Add(invoiceCheckDetail);
@@ -163,9 +162,12 @@ namespace Invoice.Utils
 
                 }
 
+                if (item.invoiceType.Trim().Length!=0)
+                {
+                    //发票代码转具体发票
+                    item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                }
 
-                //发票代码转具体发票
-                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                 //设置查验结果
                 if (recive.errcode == "0000")
                 {
@@ -212,7 +214,11 @@ namespace Invoice.Utils
                 item.checkDescription = "验真异常发票";
                 //添加发票
                 //发票代码转具体发票
-                item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                if (item.invoiceType.Trim().Length != 0)
+                {
+                    //发票代码转具体发票
+                    item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
+                }
                 //发票识别加查验的需要添加异常发票
                 if (type == 1)
                 {
