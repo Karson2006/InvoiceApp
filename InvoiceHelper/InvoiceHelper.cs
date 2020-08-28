@@ -62,7 +62,7 @@ namespace iTR.OP.Invoice
                 }
                 else
                 {
-                    result=KingDeeApi.ManualCheck(param["InvoiceCode"], param["InvoiceNo"], param["InvoiceDate"], param["InvoiceMoney"], param["InvoieCheckCode"])
+                    result = KingDeeApi.ManualCheck(param["InvoiceCode"], param["InvoiceNo"], param["InvoiceDate"], param["InvoiceMoney"], param["InvoieCheckCode"]);
                 }
             }
             catch (System.Exception err)

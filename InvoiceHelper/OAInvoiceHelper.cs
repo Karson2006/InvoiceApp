@@ -52,23 +52,20 @@ namespace iTR.OP.Invoice
 
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
                 string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,
-                                       Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032,
+                                       Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
                                         from formson_5248 
                                         Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  
-                                                      and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070')
+                                                      and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070')  and formmain_id=325255800987643520
                                                       and  field0042<='" + DateTime.Now.ToString()+"'";// and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') 
 
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 foreach (DataRow row in dt.Rows)
                 {
-
-                    fileName = path + "\\" + row["folder"].ToString() + "\\" + row["FileID"].ToString();
-
                     chkCount = int.Parse(row["field0033"].ToString()) + 1;//设置检查次数
                     InvoiceCheckResult chkResult = new InvoiceCheckResult();
                     //调用金蝶发票查验接口
-                    if (row["field0053"].ToString() == "'-4875734478274671070")//手工重验
+                    if (row["field0053"].ToString() == "-4875734478274671070")//手工重验
                     {
                         Dictionary<string, string> param = new Dictionary<string, string>();
                         param["InvoiceCode"] = row["field0015"].ToString();
@@ -80,6 +77,7 @@ namespace iTR.OP.Invoice
                     }
                     else//自动扫描与查验
                     {
+                        fileName = path + "\\" + row["folder"].ToString() + "\\" + row["FileID"].ToString();
                         chkResult = invoice.Scan_Check(fileName, fileType);
                     }
                     if (chkResult == null)//云接口调用报错，没有正常返回
@@ -196,7 +194,6 @@ namespace iTR.OP.Invoice
                                         SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
                                         break;
                                 }
-
                             }
                             break;
                         #endregion
