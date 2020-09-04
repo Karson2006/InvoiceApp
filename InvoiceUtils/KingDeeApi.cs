@@ -420,8 +420,18 @@ namespace Invoice.Utils
             {
                 //有时候基础连接会已被意外关闭，接口下次可以正常查验
 
-                invoiceCheckResult.errcode = "20000";
-                invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                //意外关闭无错误码 通常是发票无法识别
+                if (invoiceCheckResult.description.Contains("意外关闭"))
+                {
+                    invoiceCheckResult.errcode = "0310";
+                    invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                }
+                else
+                {
+                    invoiceCheckResult.errcode = "20000";
+                    invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                }
+
                 InvoiceLogger.WriteToDB("识别验真时发生异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
