@@ -55,7 +55,7 @@ namespace iTR.OP.Invoice
                                        Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
                                         from formson_5248 
                                         Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  
-                                                      and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070')  and formmain_id=325255800987643520
+                                                      and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070') 
                                                       and  field0042<='" + DateTime.Now.ToString()+"'";// and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') 
 
                 SQLServerHelper runner = new SQLServerHelper();
@@ -116,8 +116,8 @@ namespace iTR.OP.Invoice
                                             if (i.taxAmount.Trim().Length > 0)
                                                 taxamout = decimal.Parse(i.taxAmount.Trim());
 
-                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' ";//验重判断
-                                            sql = string.Format(sql, i.invoiceNo);
+                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}' ";//验重判断
+                                            sql = string.Format(sql, i.invoiceNo,i.invoiceCode);
                                             DataTable dt1 = new DataTable();
                                             dt1 = runner.ExecuteSql(sql);
                                             if (dt1.Rows.Count > 0)
@@ -142,7 +142,7 @@ namespace iTR.OP.Invoice
                                                     runner.ExecuteSqlNone(sql);
                                                 }
                                             }
-
+                                            ///处理没有返回值的数字型属性
                                             //保存查验结果
                                             decimal amount = 0;
                                             if (i.totalAmount.ToString().Trim().Length == 0)
@@ -150,6 +150,10 @@ namespace iTR.OP.Invoice
                                             else
                                                 amount = decimal.Parse(i.totalAmount);
 
+                                         
+                                            if (i.invoiceMoney.ToString().Trim().Length == 0)
+                                                i.invoiceMoney = "0";
+                                            
                                             //设置查验日期
                                             checkDate = DateTime.Now;
 
@@ -159,8 +163,8 @@ namespace iTR.OP.Invoice
                                                         field0049='{15}', field0050='{16}' ,field0053=''  Where ID={13}";
 
                                             sql = string.Format(sql, i.invoiceCode, i.invoiceNo, i.invoiceDate, i.salerName, amount, i.buyerTaxNo, i.salerAccount,
-                                                                            i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID,
-                                                                            i.taxRate, i.invoiceMoney, checkDate.ToString());
+                                                                            i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID, checkDate.ToString(),
+                                                                            i.taxRate, i.invoiceMoney);
 
                                             runner.ExecuteSqlNone(sql);
                                             FileLogger.WriteLog(" 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
