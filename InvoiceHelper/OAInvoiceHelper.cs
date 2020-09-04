@@ -116,7 +116,7 @@ namespace iTR.OP.Invoice
                                             if (i.taxAmount.Trim().Length > 0)
                                                 taxamout = decimal.Parse(i.taxAmount.Trim());
 
-                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}' ";//验重判断
+                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and field0027='通过' ";//验重判断
                                             sql = string.Format(sql, i.invoiceNo,i.invoiceCode);
                                             DataTable dt1 = new DataTable();
                                             dt1 = runner.ExecuteSql(sql);
