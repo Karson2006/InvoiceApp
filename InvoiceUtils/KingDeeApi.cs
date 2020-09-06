@@ -22,11 +22,11 @@ namespace Invoice.Utils
         static List<string> taxtype
             = new List<string> { "1", "2", "3", "4", "5", "15" };
         //应用问题
-        static List<string> errAPI = new List<string> { "0001", "0002", "1004", "1007", "1020", "1200", "1214", "1301", "1101", "1119", "1006", "1132", "3109", "9999", "0005" };
+        static List<string> errAPI = new List<string> { "0001", "0002", "1004", "1007", "1020", "1200", "1214", "1301", "1101", "1119",  "1132", "3109", "9999", "0005" };
         //待查验
         static List<string> notauth = new List<string>() { "1002", "1001", "1014", "3110" };
         //确定不通过的
-        static List<string> noPass = new List<string>() { "0006", "0009", "1005", "1008", "1009", "0313", "0314" };
+        static List<string> noPass = new List<string>() { "0006", "0009", "1005", "1006", "1008", "1009", "0313", "0314" };
 
 
 
@@ -420,8 +420,18 @@ namespace Invoice.Utils
             {
                 //有时候基础连接会已被意外关闭，接口下次可以正常查验
 
-                invoiceCheckResult.errcode = "20000";
-                invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                //意外关闭无错误码 通常是发票无法识别
+                if (invoiceCheckResult.description.Contains("意外关闭"))
+                {
+                    invoiceCheckResult.errcode = "0310";
+                    invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                }
+                else
+                {
+                    invoiceCheckResult.errcode = "20000";
+                    invoiceCheckResult.description = "识别验真时发生异常" + ex.Message;
+                }
+
                 InvoiceLogger.WriteToDB("识别验真时发生异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName);
             }
             return invoiceCheckResult;
