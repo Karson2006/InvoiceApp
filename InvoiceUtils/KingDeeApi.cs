@@ -84,53 +84,14 @@ namespace Invoice.Utils
             {
                 invoiceCheckDetail.checkCode = "10005";
                 invoiceCheckDetail.checkDescription = "未查验";
+                invoiceCheckResult.description = "未查验";
             }
             else
             {
                 try
                 {
-                    string tempdate = "";
-                    //避免日期有特殊格式无法查验
-                    if (date.Contains("/")&& date.Length!=10)
-                    {
-                        string[] re = date.Split('/');
-
-                        tempdate = re[0];
-                        //补0
-                        if (re[1].Trim().Length != 2)
-                        {
-                            re[1] = "0" + re[1];
-
-                        }
-                        if (re[2].Trim().Length != 2)
-                        {
-                            re[2] = "0" + re[2];
-                        }
-                        tempdate = re[0] + re[1] + re[2];
-                        date = tempdate;
-                    }
-                    else if (date.Contains("-") && date.Length != 10)
-                    {
-                        string[] re = date.Split('-');
-
-                        tempdate = re[0];
-                        //补0
-                        if (re[1].Trim().Length != 2)
-                        {
-                            re[1] = "0" + re[1];
-
-                        }
-                        if (re[2].Trim().Length != 2)
-                        {
-                            re[2] = "0" + re[2];
-                        }
-                        tempdate = re[0] + re[1] + re[2];
-                        date = tempdate;
-                    }
-                    else
-                    {
-                        date = Regex.Replace(date, "[^0-9]", "");
-                    }
+                    string tempdate = DateTime.Parse(date).ToString("yyyyMMdd");
+                    date = tempdate;
                     token = GetAccessToken();
                     authData.invoiceCode = code;
                     authData.invoiceNo = no;
