@@ -50,6 +50,7 @@ namespace iTR.OP.Invoice
             FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             try
             {
+                path = doc.SelectSingleNode("Configuration/Path").InnerText;
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
                 sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,
                                 Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
