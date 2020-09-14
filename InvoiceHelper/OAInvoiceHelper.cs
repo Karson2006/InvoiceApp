@@ -35,31 +35,40 @@ namespace iTR.OP.Invoice
         /// </summary>
         /// <param name="mode">0:识别+查验+所有发票</param>
         /// <returns></returns>
-        public string Run(int mode =0)
+        public string Run(int mode =0,string  billNo="")
         {
+      
             string result = "0";
             string fileName = "";
-            string path="";
-            string fileType="2";
+            string path = "";
+            string fileType = "2";
             int chkCount = 0;
+            string sql = "";
             DateTime checkDate;
+
+
             FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             try
             {
-
-                InvoiceHelper invoice = new InvoiceHelper();
-                path = doc.SelectSingleNode("Configuration/Path").InnerText;
-
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
-                string sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,
-                                       Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
-                                        from formson_5248 
-                                        Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  
-                                                      and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070') 
-                                                      and  field0042<='" + DateTime.Now.ToString()+"'";// and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') 
+                sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,
+                                Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
+                                from formson_5248 ";
+                if (mode == 0)
+                {
+                    sql = sql + @" Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  
+                                          and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070') 
+                                           and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
+                }
+                if(mode ==1)
+                {
+                    sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "')";
+                }
 
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
+                InvoiceHelper invoice = new InvoiceHelper();
+
                 foreach (DataRow row in dt.Rows)
                 {
                     chkCount = int.Parse(row["field0033"].ToString()) + 1;//设置检查次数
@@ -73,7 +82,7 @@ namespace iTR.OP.Invoice
                         param["InvoiceDate"] = row["field0017"].ToString();
                         param["InvoiceMoney"] = row["field0050"].ToString();
                         param["InvoieCheckCode"] = row["field0032"].ToString();
-                        chkResult = invoice.Scan_Check(fileName, fileType,8,"2", param);
+                        chkResult = invoice.Scan_Check(fileName, fileType, 8, "2", param);
                     }
                     else//自动扫描与查验
                     {
@@ -117,7 +126,7 @@ namespace iTR.OP.Invoice
                                                 taxamout = decimal.Parse(i.taxAmount.Trim());
 
                                             sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and field0027='通过' ";//验重判断
-                                            sql = string.Format(sql, i.invoiceNo,i.invoiceCode);
+                                            sql = string.Format(sql, i.invoiceNo, i.invoiceCode);
                                             DataTable dt1 = new DataTable();
                                             dt1 = runner.ExecuteSql(sql);
                                             if (dt1.Rows.Count > 0)
@@ -150,10 +159,10 @@ namespace iTR.OP.Invoice
                                             else
                                                 amount = decimal.Parse(i.totalAmount);
 
-                                         
+
                                             if (i.invoiceMoney.ToString().Trim().Length == 0)
                                                 i.invoiceMoney = "0";
-                                            
+
                                             //设置查验日期
                                             checkDate = DateTime.Now;
 
@@ -177,7 +186,7 @@ namespace iTR.OP.Invoice
                                     case "1002"://查验超时,2小时后再处理,查验次数+1
                                         checkDate = DateTime.Now.AddHours(2);
                                         sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
-                                        sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
+                                        sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), i.checkDescription, i.checkCode);
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "1014"://当天票不能查验，,查验次数+1
@@ -232,6 +241,12 @@ namespace iTR.OP.Invoice
                             Process.GetCurrentProcess().Kill();
                             #endregion
                             break;
+                        case "1011"://查验超时,2小时后再处理,查验次数+1
+                            checkDate = DateTime.Now.AddHours(2);
+                            sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                            sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
+                            runner.ExecuteSqlNone(sql);
+                            break;
                         case "0310"://调用接口发生异常
                             #region 调用接口错误处理
                             checkDate = DateTime.Now;
@@ -245,9 +260,9 @@ namespace iTR.OP.Invoice
                             #endregion
                             break;
                     }
-                    
+
                     //根据接口返回情况，处理发票数据库记录
-                    
+
                 }
                 //返回已处理记录数
                 result = dt.Rows.Count.ToString();
@@ -262,6 +277,8 @@ namespace iTR.OP.Invoice
             return result;
         }
 
+
+       
         public string GetID ()
         {
             string result = "-1";

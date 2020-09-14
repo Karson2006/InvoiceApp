@@ -112,27 +112,26 @@ namespace InvoiceApp
             }
         }
 
-        private void btOpen_Click(object sender, EventArgs e)
-        {
-            if (openInvoiceFile.ShowDialog() == DialogResult.OK)
-            {
-                txFileName.Text = openInvoiceFile.FileName;
-            }
-                       
-        }
+      
 
         private void btDebug_Click(object sender, EventArgs e)
         {
-            if (txFileName.Text.Trim().Length == 0)
+            try
             {
-                MessageBox.Show("文件名称不能为空", "系统提示"); 
+                if (txFileName.Text.Trim().Length == 0)
+                {
+                    MessageBox.Show("单号不能为空", "系统提示");
+                }
+                else
+                {
+                    iTR.OP.Invoice.OAInvoiceHelper invoice = new OAInvoiceHelper();
+                    invoice.Run(1, txFileName.Text.Trim());
+                }
             }
-            else
+            catch (Exception err)
             {
-                iTR.OP.Invoice.InvoiceHelper invoice = new InvoiceHelper();
-                InvoiceCheckResult result = invoice.Scan_Check(txFileName.Text, "1");
+                MessageBox.Show(err.Message, "系统提示");
             }
-            
         }
     }
 
