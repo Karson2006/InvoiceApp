@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Invoice.Utils
@@ -88,6 +89,48 @@ namespace Invoice.Utils
             {
                 try
                 {
+                    string tempdate = "";
+                    //避免日期有特殊格式无法查验
+                    if (date.Contains("/")&& date.Length!=10)
+                    {
+                        string[] re = date.Split('/');
+
+                        tempdate = re[0];
+                        //补0
+                        if (re[1].Trim().Length != 2)
+                        {
+                            re[1] = "0" + re[1];
+
+                        }
+                        if (re[2].Trim().Length != 2)
+                        {
+                            re[2] = "0" + re[2];
+                        }
+                        tempdate = re[0] + re[1] + re[2];
+                        date = tempdate;
+                    }
+                    else if (date.Contains("-") && date.Length != 10)
+                    {
+                        string[] re = date.Split('-');
+
+                        tempdate = re[0];
+                        //补0
+                        if (re[1].Trim().Length != 2)
+                        {
+                            re[1] = "0" + re[1];
+
+                        }
+                        if (re[2].Trim().Length != 2)
+                        {
+                            re[2] = "0" + re[2];
+                        }
+                        tempdate = re[0] + re[1] + re[2];
+                        date = tempdate;
+                    }
+                    else
+                    {
+                        date = Regex.Replace(date, "[^0-9]", "");
+                    }
                     token = GetAccessToken();
                     authData.invoiceCode = code;
                     authData.invoiceNo = no;
