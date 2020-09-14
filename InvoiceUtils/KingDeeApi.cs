@@ -82,9 +82,8 @@ namespace Invoice.Utils
 
             if (code.Trim().Length == 0 || no.Trim().Length == 0 || date.Trim().Length == 0 || money.Trim().Length == 0 || checkCode.Trim().Length == 0)
             {
-                invoiceCheckDetail.checkCode = "10005";
+                invoiceCheckDetail.checkErrcode = "10005";
                 invoiceCheckDetail.checkDescription = "未查验";
-                invoiceCheckResult.description = "未查验";
             }
             else
             {
