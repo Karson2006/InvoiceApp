@@ -33,7 +33,6 @@ namespace iTR.OP.Invoice
         public InvoiceCheckResult Scan_Check(string fileName, string fileType, int timeOutSecond = 8,string mode="1", Dictionary<string,string> param=null)
         {
             InvoiceCheckResult result = null;
-            result = KingDeeApi.ManualCheck("3100194130", "20396749", "2020/07/03", "176.99", "");
             try
             {
                 if (mode == "1")
