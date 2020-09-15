@@ -216,7 +216,7 @@ namespace Invoice.Utils
                 item.checkDescription = "验真异常发票";
                 //添加发票
                 //发票代码转具体发票
-                if (item.invoiceType.Trim().Length != 0)
+                if (item.invoiceType!=null)
                 {
                     //发票代码转具体发票
                     item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
@@ -459,7 +459,7 @@ namespace Invoice.Utils
             request = (System.Net.HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.ContentType = "application/json;charset=UTF-8";
-            request.Timeout = 10 * 1000;//设置超时
+            request.Timeout = 20 * 1000;//设置超时
 
             string paraUrlCoded = param;
             byte[] payload;
