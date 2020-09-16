@@ -23,7 +23,7 @@ namespace Invoice.Utils
         static List<string> taxtype
             = new List<string> { "1", "2", "3", "4", "5", "15" };
         //应用问题
-        static List<string> errAPI = new List<string> { "0001", "0002", "1004", "1007", "1020", "1200", "1214", "1301", "1101", "1119",  "1132", "3109", "9999", "0005" };
+        static List<string> errAPI = new List<string> { "0001", "0002", "1004", "1007", "1020", "1200", "1214", "1301", "1101", "1119", "1132", "3109", "9999", "0005" };
         //待查验
         static List<string> notauth = new List<string>() { "1002", "1001", "1014", "3110" };
         //确定不通过的
@@ -68,7 +68,7 @@ namespace Invoice.Utils
         /// <param name="money">不含税金额</param>
         /// <param name="checkCode">校验码后六位</param>
         /// <returns></returns>
-        public static InvoiceCheckResult ManualCheck(string code, string no, string date, string money, string checkCode)
+        public static InvoiceCheckResult ManualCheck(string code, string no, string date, string money = "", string checkCode = "")
         {
             //验真用另一个数据结构
             AuthData authData = new AuthData();
@@ -79,8 +79,7 @@ namespace Invoice.Utils
             string logjson = "";
             string jsonstr = "";
             string token;
-
-            if (code.Trim().Length == 0 || no.Trim().Length == 0 || date.Trim().Length == 0 || money.Trim().Length == 0 || checkCode.Trim().Length == 0)
+            if (code.Trim().Length == 0 || no.Trim().Length == 0 || date.Trim().Length == 0)
             {
                 invoiceCheckDetail.checkErrcode = "10005";
                 invoiceCheckDetail.checkDescription = "未查验";
@@ -217,7 +216,7 @@ namespace Invoice.Utils
                 item.checkDescription = "验真异常发票";
                 //添加发票
                 //发票代码转具体发票
-                if (item.invoiceType.Trim().Length != 0)
+                if (item.invoiceType!=null)
                 {
                     //发票代码转具体发票
                     item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
@@ -460,7 +459,7 @@ namespace Invoice.Utils
             request = (System.Net.HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.ContentType = "application/json;charset=UTF-8";
-            request.Timeout = 10 * 1000;//设置超时
+            request.Timeout = 20 * 1000;//设置超时
 
             string paraUrlCoded = param;
             byte[] payload;
