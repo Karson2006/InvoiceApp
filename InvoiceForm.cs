@@ -118,6 +118,7 @@ namespace InvoiceApp
         {
             try
             {
+                this.Cursor = System.Windows.Forms.Cursors.WaitCursor;
                 if (txFileName.Text.Trim().Length == 0)
                 {
                     MessageBox.Show("单号不能为空", "系统提示");
@@ -127,11 +128,15 @@ namespace InvoiceApp
                     iTR.OP.Invoice.OAInvoiceHelper invoice = new OAInvoiceHelper();
                     invoice.Run(1, txFileName.Text.Trim());
                 }
+                this.Cursor = System.Windows.Forms.Cursors.Arrow;//设置鼠标为正常状态
+                MessageBox.Show("查验完成", "系统提示");
             }
             catch (Exception err)
             {
+                this.Cursor = System.Windows.Forms.Cursors.Arrow;//设置鼠标为正常状态
                 MessageBox.Show(err.Message, "系统提示");
             }
+
         }
     }
 

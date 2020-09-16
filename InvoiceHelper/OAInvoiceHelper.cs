@@ -37,7 +37,6 @@ namespace iTR.OP.Invoice
         /// <returns></returns>
         public string Run(int mode =0,string  billNo="")
         {
-      
             string result = "0";
             string fileName = "";
             string path = "";
@@ -47,7 +46,7 @@ namespace iTR.OP.Invoice
             DateTime checkDate;
 
 
-            FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
+            FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run"+ billNo, "DataService", "AppMessage");
             try
             {
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
@@ -63,9 +62,10 @@ namespace iTR.OP.Invoice
                 }
                 if(mode ==1)
                 {
-                    sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "')";
+                    sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
+                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过') " +
+                        "  and isnull(field0039,'') ='是' ";
                 }
-
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 InvoiceHelper invoice = new InvoiceHelper();
@@ -96,7 +96,8 @@ namespace iTR.OP.Invoice
                         continue;
                     }
                     //调用成功
-                    FileLogger.WriteLog("调用接口成功文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
+                    if (fileName.Length  > 0)
+                        FileLogger.WriteLog("调用接口成功,文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
 
                     switch (chkResult.errcode)//操作错误代码
                     {
@@ -126,7 +127,7 @@ namespace iTR.OP.Invoice
                                             if (i.taxAmount.Trim().Length > 0)
                                                 taxamout = decimal.Parse(i.taxAmount.Trim());
 
-                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and field0027='通过' ";//验重判断
+                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and  Isnull(field0027,'') = '通过'";//验重判断
                                             sql = string.Format(sql, i.invoiceNo, i.invoiceCode);
                                             DataTable dt1 = new DataTable();
                                             dt1 = runner.ExecuteSql(sql);
@@ -177,7 +178,8 @@ namespace iTR.OP.Invoice
                                                                             i.taxRate, i.invoiceMoney);
 
                                             runner.ExecuteSqlNone(sql);
-                                            FileLogger.WriteLog(" 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
+                                            if (fileName.Length > 0)
+                                                FileLogger.WriteLog(" 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
                                         }
                                         break;
 
@@ -231,7 +233,7 @@ namespace iTR.OP.Invoice
                                         break;
                                     default://10001,
                                         checkDate = DateTime.Now;
-                                        SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
+                                        SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, i.checkDescription, i.checkErrcode);
                                         break;
                                 }
                             }
@@ -261,9 +263,7 @@ namespace iTR.OP.Invoice
                             #endregion
                             break;
                     }
-
                     //根据接口返回情况，处理发票数据库记录
-
                 }
                 //返回已处理记录数
                 result = dt.Rows.Count.ToString();
@@ -300,7 +300,7 @@ namespace iTR.OP.Invoice
             string sql = "";
             SQLServerHelper runner = new SQLServerHelper();
 
-            sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}'  Where ID={2}";
+            sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}',field0027='{3}'  Where ID={2}";
             sql = string.Format(sql, chkCount, checkDate, invoceIID, errdescription, errCode);
             runner.ExecuteSqlNone(sql);
         }
