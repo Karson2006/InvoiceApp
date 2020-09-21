@@ -51,19 +51,19 @@ namespace iTR.OP.Invoice
             {
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
-                sql = @"Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,
-                                Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032
-                                from formson_5248 ";
+                sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,"+
+                          "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 "+
+                          "    from formson_5248 ";
                 if (mode == 0)
                 {
-                    sql = sql + @" Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  
-                                          and  (isnull(field0023,'')   Not In('通过','不通过','重号') or isnull(field0053,'')='-4875734478274671070') 
-                                           and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
+                    sql = sql + " Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  "+
+                                      "  and  (isnull(field0023,'')   Not In('通过','不通过','重号','此票不存在') or isnull(field0053,'')='-4875734478274671070') " +
+                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
                 }
                 if(mode ==1)
                 {
                     sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
-                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过') " +
+                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过','此票不存在') " +
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();
@@ -112,7 +112,7 @@ namespace iTR.OP.Invoice
                                     case "0000":
                                         rowID = row["ID"].ToString();
                                         //类型为其他、发票号为空，不是发票,设置不是发票状态，以免下次还继续查验
-                                        if (i.invoiceType == "其他" || i.invoiceNo.Trim().Length == 0)
+                                        if (i.invoiceNo.Trim().Length == 0)
                                         {
                                             sql = "Update formson_5248 Set field0039='否' Where ID='" + rowID + "'";
                                             runner.ExecuteSqlNone(sql);
@@ -209,7 +209,7 @@ namespace iTR.OP.Invoice
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10002"://在官方数据库查不到此发票
-                                        sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                        sql = @"update formson_5248 Set field0033= {0} , field0023 ='{1}' , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 3, "此票不存在", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
