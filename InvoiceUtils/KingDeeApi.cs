@@ -102,7 +102,7 @@ namespace Invoice.Utils
                 catch (Exception ex)
                 {
                     invoiceCheckResult.errcode = "20000";
-                    invoiceCheckResult.description = "验真时异常";
+                    invoiceCheckResult.description = ex.Message;
                 }
             }
             invoiceCheckResult.CheckDetailList.Add(invoiceCheckDetail);
@@ -213,7 +213,7 @@ namespace Invoice.Utils
             catch (Exception ex)
             {
                 item.checkErrcode = "10001";
-                item.checkDescription = "验真异常发票";
+                item.checkDescription = ex.Message;
                 //添加发票
                 //发票代码转具体发票
                 if (item.invoiceType!=null)
