@@ -95,7 +95,14 @@ namespace Invoice.Utils
                     authData.invoiceNo = no;
                     authData.invoiceDate = date;
                     authData.invoiceMoney = money;
-                    authData.checkCode = checkCode;
+                    if (checkCode.Length>6)
+                    {
+                        authData.checkCode = checkCode.Substring(checkCode.Length-6);
+                    }
+                    else
+                    {
+                        authData.checkCode = checkCode;
+                    }
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
                 }
