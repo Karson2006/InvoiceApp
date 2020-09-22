@@ -10,10 +10,14 @@ namespace Invoice.Utils
 {
     public class ApiUtil
     {
-        private static string client_id = "Dmr52ovwDN0ESd";
-        private static string client_secret = "k6lirHrIjV3oiwO046HT3rc1idj4kE";
-        private static string encrypt_key = "WwFjhx77iTxgcwlg";
-        private static string base_url = "https://api-dev.piaozone.com/test";
+        //private static string client_id = "Dmr52ovwDN0ESd";
+        //private static string client_secret = "k6lirHrIjV3oiwO046HT3rc1idj4kE";
+        //private static string encrypt_key = "WwFjhx77iTxgcwlg";
+        //private static string base_url = "https://api-dev.piaozone.com/test";
+        private static string client_id = ConfigurationManager.AppSettings["client_id"];
+        private static string client_secret = ConfigurationManager.AppSettings["client_secret"];
+        private static string encrypt_key = ConfigurationManager.AppSettings["encrypt_key"];
+        private static string base_url = ConfigurationManager.AppSettings["base_url"];
         private static string token_url = "/base/oauth/token";
         private static string text_check_url = "/m13/bill/invoice/sys/check?access_token=";
         private static string img_check_url = "/m3/bill/invoice/img/Check/info?access_token=";
