@@ -88,6 +88,7 @@ namespace Invoice.Utils
             {
                 try
                 {
+                    //日期处理
                     string tempdate = DateTime.Parse(date).ToString("yyyyMMdd");
                     date = tempdate;
                     token = GetAccessToken();
@@ -95,22 +96,18 @@ namespace Invoice.Utils
                     authData.invoiceNo = no;
                     authData.invoiceDate = date;
                     authData.invoiceMoney = money;
+                    //以下大部分是空格处理，有空格内容，查验接口会返回无法使用的状态，程序退出
+                    //这接口只是能用的状态，
                     if (checkCode.Length>6)
                     {
-                        authData.checkCode = checkCode.Substring(checkCode.Length-6);
+                        authData.checkCode = checkCode.Replace(" ", "").Substring(checkCode.Length-6);
                     }
                     else
                     {
-                        authData.checkCode = checkCode;
+                        authData.checkCode = checkCode.Replace(" ","");
                     }
-                    if (no.Length>8)
-                    {
-                        authData.invoiceNo = no.Substring(no.Length - 8);
-                    }
-                    else
-                    {
-                        authData.invoiceNo = no;
-                    }
+                    authData.invoiceNo = no.Replace(" ","");
+                    authData.invoiceCode = code.Replace(" ", "");
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
                 }
