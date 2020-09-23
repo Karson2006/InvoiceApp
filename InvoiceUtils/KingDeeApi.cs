@@ -97,7 +97,7 @@ namespace Invoice.Utils
                     authData.invoiceDate = date;
                     authData.invoiceMoney = money;
                     //以下大部分是空格处理，有空格内容，查验接口会返回无法使用的状态，程序退出
-                    //这接口只是能用的状态，
+                    //这接口只是能用的状态，有时候接口问题随缘出现
                     if (checkCode.Length>6)
                     {
                         authData.checkCode = checkCode.Replace(" ", "").Substring(checkCode.Length-6);
@@ -106,7 +106,7 @@ namespace Invoice.Utils
                     {
                         authData.checkCode = checkCode.Replace(" ","");
                     }
-                    authData.invoiceNo = no.Replace(" ","");
+                    authData.invoiceNo = no.Replace(" ", "");
                     authData.invoiceCode = code.Replace(" ", "");
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
@@ -239,6 +239,15 @@ namespace Invoice.Utils
                     invoiceCheckResult.CheckDetailList.Add(item);
                 }
                 InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+            }
+            //在加一次判断，免税的发票，设置0%，没有税率的也设置0%
+            if (item.taxAmount.Trim().Length > 0)
+            {
+                //0.00
+                if (double.Parse(item.taxAmount) == 0.00)
+                {
+                    item.taxRate = "0%";
+                }
             }
             return item;
         }
