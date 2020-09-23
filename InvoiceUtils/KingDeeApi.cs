@@ -115,6 +115,7 @@ namespace Invoice.Utils
                 {
                     invoiceCheckResult.errcode = "20000";
                     invoiceCheckResult.description = ex.Message;
+                    InvoiceLogger.WriteToDB("手动查验异常退出:"+ ex.Message, invoiceCheckResult.errcode,"", "", "", logjson, "");
                 }
             }
             invoiceCheckResult.CheckDetailList.Add(invoiceCheckDetail);
@@ -188,6 +189,15 @@ namespace Invoice.Utils
                     if (recive.data.cancelMark == "N")
                     {
                         item.checkStatus = "通过";
+                        //在加一次判断，免税的发票，设置0%，没有税率的也设置0%
+                        if (item.taxAmount.Trim().Length > 0)
+                        {
+                            //0.00
+                            if (double.Parse(item.taxAmount) == 0.00)
+                            {
+                                item.taxRate = "0%";
+                            }
+                        }
                     }
                     else
                     {
@@ -221,6 +231,7 @@ namespace Invoice.Utils
                     }
                     InvoiceLogger.WriteToDB("查验未通过", invoiceCheckResult.errcode, recive.errcode, recive.description, fileName, logjson, item.invoiceType);
                 }
+
             }
             catch (Exception ex)
             {
@@ -240,15 +251,7 @@ namespace Invoice.Utils
                 }
                 InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName, logjson, item.invoiceType);
             }
-            //在加一次判断，免税的发票，设置0%，没有税率的也设置0%
-            if (item.taxAmount.Trim().Length > 0)
-            {
-                //0.00
-                if (double.Parse(item.taxAmount) == 0.00)
-                {
-                    item.taxRate = "0%";
-                }
-            }
+
             return item;
         }
         /// <summary>
@@ -450,8 +453,8 @@ namespace Invoice.Utils
             }
             catch (Exception ex)
             {
-                //有时候基础连接会已被意外关闭，接口下次可以正常查验
 
+                //有时候基础连接会已被意外关闭，接口下次可以正常查验
                 //意外关闭无错误码 通常是发票无法识别
                 if (invoiceCheckResult.description.Contains("意外关闭"))
                 {
@@ -684,7 +687,7 @@ namespace Invoice.Utils
         public string invoiceDate { get; set; }
         public string salerName { get; set; }
         public string amount { get; set; }
-        public string taxAmount { get; set; }
+        public string taxAmount { get; set; } = "";
         public string totalAmount { get; set; }
         public string invoiceType { get; set; }
         public string buyerTaxNo { get; set; }
