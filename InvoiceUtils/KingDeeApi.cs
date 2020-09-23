@@ -103,6 +103,14 @@ namespace Invoice.Utils
                     {
                         authData.checkCode = checkCode;
                     }
+                    if (no.Length>8)
+                    {
+                        authData.invoiceNo = no.Substring(no.Length - 8);
+                    }
+                    else
+                    {
+                        authData.invoiceNo = no;
+                    }
                     authData.isCreateUrl = "1";
                     invoiceCheckDetail = KingdeeCheck(token, ref invoiceCheckDetail, authData, ref logjson, ref jsonstr, ref invoiceCheckResult, 2, "手动查验方式");
                 }
@@ -415,6 +423,15 @@ namespace Invoice.Utils
                             item.invoiceType = Enum.GetName(typeof(InvoiceType), int.Parse(item.invoiceType));
                             logjson = JsonConvert.SerializeObject(item);
                         }
+                        //在加一次判断，免税的发票，设置0%，没有税率的也设置0%
+                        if (item.taxAmount.Trim().Length>0)
+                        {
+                            //0.00
+                            if (double.Parse(item.taxAmount)==0.00)
+                            {
+                                item.taxRate = "0%";
+                            }
+                        }
                         //添加发票
                         invoiceCheckResult.CheckDetailList.Add(item);
 
@@ -443,6 +460,8 @@ namespace Invoice.Utils
 
                 InvoiceLogger.WriteToDB("识别验真时发生异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName);
             }
+
+            
             return invoiceCheckResult;
         }
         //获取识别结果
@@ -679,7 +698,7 @@ namespace Invoice.Utils
 
         //需要保存的状态                             
         public string cancelMark { get; set; }
-        public string taxRate { get; set; }
+        public string taxRate { get; set; } = "0%";
 
         //税率
         public List<TaxRate> items { get; set; }
