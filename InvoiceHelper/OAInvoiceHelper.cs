@@ -56,14 +56,14 @@ namespace iTR.OP.Invoice
                           "    from formson_5248 ";
                 if (mode == 0)
                 {
-                    sql = sql + " Where    isnull(field0033,0)<3 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  "+
-                                      "  and  (isnull(field0023,'')   Not In('通过','不通过','重号','此票不存在') or isnull(field0053,'')='-4875734478274671070') " +
-                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
+                    sql = sql + " Where    isnull(field0033,0)<2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  "+
+                                      "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070') " +
+                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') " ;
                 }
                 if(mode ==1)
                 {
                     sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
-                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过','此票不存在') " +
+                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过') " +
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();
@@ -78,11 +78,11 @@ namespace iTR.OP.Invoice
                     if (row["field0053"].ToString() == "-4875734478274671070")//手工重验
                     {
                         Dictionary<string, string> param = new Dictionary<string, string>();
-                        param["InvoiceCode"] = row["field0015"].ToString();
-                        param["InvoiceNo"] = row["field0016"].ToString();
-                        param["InvoiceDate"] = row["field0017"].ToString();
-                        param["InvoiceMoney"] = row["field0050"].ToString();
-                        param["InvoieCheckCode"] = row["field0032"].ToString();
+                        param["InvoiceCode"] = row["field0015"].ToString().Trim();
+                        param["InvoiceNo"] = row["field0016"].ToString().Trim();
+                        param["InvoiceDate"] = row["field0017"].ToString().Trim();
+                        param["InvoiceMoney"] = row["field0050"].ToString().Trim();
+                        param["InvoieCheckCode"] = row["field0032"].ToString().Trim();
                         chkResult = invoice.Scan_Check(fileName, fileType, 8, "2", param);
                     }
                     else//自动扫描与查验
@@ -184,7 +184,11 @@ namespace iTR.OP.Invoice
                                         break;
 
                                     case "1001"://超过该张票当天查验次数,不处理
-                                        continue;
+                                        checkDate = DateTime.Now.AddDays(1);
+                                        sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                                        sql = string.Format(sql, 2, checkDate, row["ID"].ToString(), i.checkDescription, i.checkCode);
+                                        runner.ExecuteSqlNone(sql);
+                                        break;
 
                                     case "1002"://查验超时,2小时后再处理,查验次数+1
                                         checkDate = DateTime.Now.AddHours(2);
@@ -200,30 +204,33 @@ namespace iTR.OP.Invoice
                                         break;
                                     case "1015"://超过一年的不能查验， 
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
-                                        sql = string.Format(sql, 3, "发票超1年", row["ID"].ToString());
+                                        sql = string.Format(sql, 2, "发票超1年", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "3110"://发票查验地区税局服务暂停
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
-                                        sql = string.Format(sql, 3, "地方税局暂定查验服务", row["ID"].ToString());
+                                        sql = string.Format(sql, 2, "地方税局暂定查验服务", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10002"://在官方数据库查不到此发票
                                         sql = @"update formson_5248 Set field0033= {0} , field0023 ='{1}' , field0027 ='{1}' Where ID={2}";
-                                        sql = string.Format(sql, 3, "此票不存在", row["ID"].ToString());
+                                        sql = string.Format(sql, 2, "此票不存在", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10003"://发票查验接口无法正常使用,退出应用
-                                        Process.GetCurrentProcess().Kill();
+                                                 //Process.GetCurrentProcess().Kill();
+                                        sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                        sql = string.Format(sql, 2, "接口错误", row["ID"].ToString());
+                                        runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10004"://发票作废
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
-                                        sql = string.Format(sql, 3, "此票作废", row["ID"].ToString());
+                                        sql = string.Format(sql, 2, "此票作废", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10005"://
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
-                                        sql = string.Format(sql, 3, "发票信息不全", row["ID"].ToString());
+                                        sql = string.Format(sql, 2, "发票信息不全", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
                                     case "10300"://
@@ -233,7 +240,7 @@ namespace iTR.OP.Invoice
                                         break;
                                     default://10001,
                                         checkDate = DateTime.Now;
-                                        SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, i.checkDescription, i.checkErrcode);
+                                        SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, i.checkDescription, i.checkErrcode);
                                         break;
                                 }
                             }
@@ -241,7 +248,11 @@ namespace iTR.OP.Invoice
                         #endregion
                         case "20000"://调用接口发生异常
                             #region 调用接口错误处理，
-                            Process.GetCurrentProcess().Kill();
+                            //Process.GetCurrentProcess().Kill();
+                            checkDate = DateTime.Now.AddHours(2);
+                            sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                            sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
+                            runner.ExecuteSqlNone(sql);
                             #endregion
                             break;
                         case "1011"://查验超时,2小时后再处理,查验次数+1
@@ -253,13 +264,13 @@ namespace iTR.OP.Invoice
                         case "0310"://调用接口发生异常
                             #region 调用接口错误处理
                             checkDate = DateTime.Now;
-                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
+                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, chkResult.description, chkResult.errcode);
                             #endregion
                             break;
                         case "333333"://附件超大
                             #region 附件超大
                             checkDate = DateTime.Now;
-                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 3, chkResult.description, chkResult.errcode);
+                            SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, chkResult.description, chkResult.errcode);
                             #endregion
                             break;
                     }
