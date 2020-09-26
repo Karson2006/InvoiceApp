@@ -184,7 +184,7 @@ namespace iTR.OP.Invoice
                                         break;
 
                                     case "1001"://超过该张票当天查验次数,不处理
-                                        checkDate = DateTime.Now.AddDays(1);
+                                        checkDate =Convert.ToDateTime( DateTime.Now.AddDays(1).ToString("yyyy-MM-dd 01:30:00"));
                                         sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
                                         sql = string.Format(sql, 2, checkDate, row["ID"].ToString(), i.checkDescription, i.checkCode);
                                         runner.ExecuteSqlNone(sql);
