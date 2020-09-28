@@ -56,10 +56,13 @@ namespace iTR.OP.Invoice
                           "    from formson_5248 ";
                 if (mode == 0)
                 {
-                    sql = sql + " Where    isnull(field0033,0)<2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  "+
-                                      "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070') " +
-                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') " ;
+                    sql = sql + " Where    isnull(field0033,0)<2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
+                                      "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070')  " +
+                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
+                    
+                    //sql = sql + " Where    field0020='-1208696524531874797'";
                 }
+            
                 if(mode ==1)
                 {
                     sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
@@ -69,6 +72,7 @@ namespace iTR.OP.Invoice
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 InvoiceHelper invoice = new InvoiceHelper();
+                
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -99,6 +103,7 @@ namespace iTR.OP.Invoice
                     if (fileName.Length  > 0)
                         FileLogger.WriteLog("调用接口成功,文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
 
+                  
                     switch (chkResult.errcode)//操作错误代码
                     {
                         case "0000"://调用成功
@@ -315,7 +320,204 @@ namespace iTR.OP.Invoice
             sql = string.Format(sql, chkCount, checkDate, invoceIID, errdescription, errCode);
             runner.ExecuteSqlNone(sql);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chkResult">发票查验结果对象</param>
+        /// <param name="rowID">发票子表ID</param>
+        /// <returns></returns>
+        public string CheckInvoiceData( InvoiceCheckResult chkResult, int mode=0, string rowID="", int chkCount=1,
+                                                            string invoceFileID="",string fileName = "", string pid = "", string  folderName = "", 
+                                                            string invoiceType = "",string form="",string billNo="" )
+        {
+            string result = "", sql = "";
+            DateTime checkDate;
 
+            SQLServerHelper runner = new SQLServerHelper();
+            if(mode==1)//药瑞宝发票查验
+            {
+
+            }
+
+            switch (chkResult.errcode)//操作错误代码
+            {
+                case "0000"://调用成功
+                    #region 调用成功
+                    int invoiceSeq = 0;
+                   
+                    foreach (InvoiceCheckDetail i in chkResult.CheckDetailList)//每张发票查验结果
+                    {
+
+                        switch (i.checkErrcode)
+                        {
+                            case "0000":
+                               
+                                //类型为其他、发票号为空，不是发票,设置不是发票状态，以免下次还继续查验
+                                if (i.invoiceNo.Trim().Length == 0)
+                                {
+                                    sql = "Update formson_5248 Set field0039='否' Where ID='" + rowID + "'";
+                                    runner.ExecuteSqlNone(sql);
+                                    continue;
+                                }
+
+                                if (i.invoiceNo.Trim().Length > 0)
+                                {
+                                    decimal taxamout = 0;
+                                    invoiceSeq = invoiceSeq + 1;
+
+                                    if (i.taxAmount.Trim().Length > 0)
+                                        taxamout = decimal.Parse(i.taxAmount.Trim());
+
+                                    sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and  Isnull(field0027,'') = '通过'";//验重判断
+                                    sql = string.Format(sql, i.invoiceNo, i.invoiceCode);
+                                    DataTable dt1 = new DataTable();
+                                    dt1 = runner.ExecuteSql(sql);
+                                    if (dt1.Rows.Count > 0)
+                                        i.checkStatus = "重号";
+
+                                    if (invoiceSeq == 1)//文件中只有一张发票
+                                    {
+
+                                    }
+                                    else//文件中有多张发票,先插入新纪录（先判断是否存在，不存在则插入）
+                                    {
+                                        //先判断相应的多张发票记录已存在
+                                        sql = "Select ID from formson_5248 Where field0020='{0}' and isnull(field0016,'') ='{1}'";
+                                        sql = string.Format(sql, invoceFileID, i.invoiceCode);
+                                        dt1 = runner.ExecuteSql(sql);
+                                        if (dt1.Rows.Count == 0)//文件中多张发票不存在，则插入
+                                        {
+                                            rowID = GetID();
+                                            sql = @"Insert Into [formson_5248](ID,formmain_id,sort,field0012,field0013,field0014,field0020)
+			                                                Values({0},{1},1,'{2}','{3}','{4}','{5}')";
+                                            sql = string.Format(sql, rowID, pid, fileName,folderName, invoiceType, invoceFileID);
+                                            runner.ExecuteSqlNone(sql);
+                                        }
+                                    }
+                                    ///处理没有返回值的数字型属性
+                                    //保存查验结果
+                                    decimal amount = 0;
+                                    if (i.totalAmount.ToString().Trim().Length == 0)
+                                        amount = 0;
+                                    else
+                                        amount = decimal.Parse(i.totalAmount);
+
+
+                                    if (i.invoiceMoney.ToString().Trim().Length == 0)
+                                        i.invoiceMoney = "0";
+
+                                    //设置查验日期
+                                    checkDate = DateTime.Now;
+
+                                    sql = @"update formson_5248 Set field0033= isnull(field0033,0)+1,field0015='{0}',field0016='{1}',field0017='{2}',
+                                                        field0018='{3}',field0019='{4}',field0021='{5}',field0022='{6}',field0023  ='{7}',
+                                                        field0024='{8}',field0025='{9}',field0026='{10}',field0027='{7}',field0032='{11}',field0034='{12}' , field0042='{14}',
+                                                        field0049='{15}', field0050='{16}' ,field0053=''  Where ID={13}";
+
+                                    sql = string.Format(sql, i.invoiceCode, i.invoiceNo, i.invoiceDate, i.salerName, amount, i.buyerTaxNo, i.salerAccount,
+                                                                    i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID, checkDate.ToString(),
+                                                                    i.taxRate, i.invoiceMoney);
+
+                                    runner.ExecuteSqlNone(sql);
+                                    if (fileName.Length > 0)
+                                        FileLogger.WriteLog(" 成功处理文件名：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
+                                }
+                                break;
+
+                            case "1001"://超过该张票当天查验次数,不处理
+                                checkDate = Convert.ToDateTime(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd 01:30:00"));
+                                sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                                sql = string.Format(sql, 2, checkDate, rowID, i.checkDescription, i.checkCode);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+
+                            case "1002"://查验超时,2小时后再处理,查验次数+1
+                                checkDate = DateTime.Now.AddHours(2);
+                                sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                                sql = string.Format(sql, chkCount, checkDate, rowID, i.checkDescription, i.checkCode);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "1014"://当天票不能查验，,查验次数+1
+                                checkDate = DateTime.Now;
+                                sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0017 ='{2}',field0025='{4}',field0024 ='{5}'   Where ID={3}";
+                                sql = string.Format(sql, chkCount, checkDate.AddDays(1), checkDate, rowID, chkResult.description, chkResult.errcode);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "1015"://超过一年的不能查验， 
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "发票超1年", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "3110"://发票查验地区税局服务暂停
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "地方税局暂定查验服务", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "10002"://在官方数据库查不到此发票
+                                sql = @"update formson_5248 Set field0033= {0} , field0023 ='{1}' , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "此票不存在", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "10003"://发票查验接口无法正常使用,退出应用
+                                         //Process.GetCurrentProcess().Kill();
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "接口错误", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "10004"://发票作废
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "此票作废", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "10005"://
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 2, "发票信息不全", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            case "10300"://
+                                sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
+                                sql = string.Format(sql, 3, "发票串号", rowID);
+                                runner.ExecuteSqlNone(sql);
+                                break;
+                            default://10001,
+                                checkDate = DateTime.Now;
+                                SetInvoceCheckStatus(rowID, checkDate, 2, i.checkDescription, i.checkErrcode);
+                                break;
+                        }
+                    }
+                    break;
+                #endregion
+                case "20000"://调用接口发生异常
+                    #region 调用接口错误处理，
+                    //Process.GetCurrentProcess().Kill();
+                    checkDate = DateTime.Now.AddHours(2);
+                    sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                    sql = string.Format(sql, chkCount, checkDate, rowID, chkResult.description, chkResult.errcode);
+                    runner.ExecuteSqlNone(sql);
+                    #endregion
+                    break;
+                case "1011"://查验超时,2小时后再处理,查验次数+1
+                    checkDate = DateTime.Now.AddHours(2);
+                    sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
+                    sql = string.Format(sql, chkCount, checkDate, rowID, chkResult.description, chkResult.errcode);
+                    runner.ExecuteSqlNone(sql);
+                    break;
+                case "0310"://调用接口发生异常
+                    #region 调用接口错误处理
+                    checkDate = DateTime.Now;
+                    SetInvoceCheckStatus(rowID, checkDate, 2, chkResult.description, chkResult.errcode);
+                    #endregion
+                    break;
+                case "333333"://附件超大
+                    #region 附件超大
+                    checkDate = DateTime.Now;
+                    SetInvoceCheckStatus(rowID, checkDate, 2, chkResult.description, chkResult.errcode);
+                    #endregion
+                    break;
+            }
+
+            return result;
+        }
         
     }
 }

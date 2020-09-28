@@ -72,9 +72,6 @@ namespace iTR.OP.Invoice
             return result;
         }
 
-
-
-
         public static byte[] GetBytesByPath(string path)
         {
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -87,6 +84,83 @@ namespace iTR.OP.Invoice
             return bytes;
         }
 
+        public static string InvoiceCheckResult2Xml(InvoiceCheckResult chkResult)
+        {
+           
+            string xmlString = @"<InvoiceResult>
+                                               <errcode>{0}</errcode>
+                                               <description>{1}</description>
+                                               <CheckDetailList>{2}</CheckDetailList></InvoiceResult> ";
+            string detailStringFormat = @"<InvoiceCheckDetail>
+			                                        <serialNo>{0}</serialNo>
+			                                        <invoiceCode>{1}</invoiceCode>
+			                                        <invoiceDate>{2}</invoiceDate>
+			                                        <salerName>{3}</salerName>
+			                                        <amount>{4}</amount>
+			                                        <taxAmount>{5}</taxAmount>
+			                                        <invoiceType>{6}</invoiceType>
+			                                        <buyerTaxNo>{7}</buyerTaxNo>
+			                                        <salerAccount>{8}</salerAccount>
+			                                        <checkStatus>{9}</checkStatus>
+			                                        <checkErrcode>{10}</checkErrcode>
+			                                        <checkCode>{11}</checkCode>
+			                                        <checkDescription>{12}</checkDescription>
+			                                        <invoiceMoney>{13}</invoiceMoney>
+			                                        <printingSequenceNo>{14}</printingSequenceNo>
+			                                        <taxRate>{15}</taxRate>
+			                                        <electronicTicketNum>{16}</electronicTicketNum>
+                                                   <invoiceNo>{17}</invoiceNo>
+		                                        </InvoiceCheckDetail>";
+            string detailString="",detailStrings = "";
+            foreach (InvoiceCheckDetail i in chkResult.CheckDetailList)
+            {
+                detailString = string.Format(detailStringFormat, i.serialNo,i.invoiceCode,i.invoiceDate,i.salerName,
+                                                                                  i.amount,i.taxAmount,i.invoiceType,i.buyerTaxNo,
+                                                                                  i.salerAccount,i.checkStatus,i.checkErrcode,i.checkCode,
+                                                                                  i.checkDescription,i.invoiceMoney,i.printingSequenceNo,
+                                                                                  i.taxRate,i.electronicTicketNum,i.invoiceNo);
+                detailStrings = detailStrings + detailString;
+            }
+            xmlString = string.Format(xmlString, chkResult.errcode, chkResult.description, detailStrings);
+            return xmlString;
+        }
+
+        public static  InvoiceCheckResult  Xml2InvoiceCheckResult(string xmlInvoiceString)
+        {
+            InvoiceCheckResult chkResult = new InvoiceCheckResult();
+
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xmlInvoiceString);
+            chkResult.errcode = doc.SelectSingleNode("InvoiceResult/errcode").InnerText;
+            chkResult.description = doc.SelectSingleNode("InvoiceResult/description").InnerText;
+            XmlNodeList detailNodes = doc.SelectNodes("InvoiceResult/CheckDetailList/InvoiceCheckDetail");
+            List < InvoiceCheckDetail >invoiceList= new List<InvoiceCheckDetail>();
+            foreach(XmlNode i in detailNodes)
+            {
+                InvoiceCheckDetail detail = new InvoiceCheckDetail();
+                detail.serialNo = i.SelectSingleNode("serialNo").InnerText;
+                detail.invoiceCode = i.SelectSingleNode("invoiceCode").InnerText;
+                detail.invoiceNo = i.SelectSingleNode("invoiceNo").InnerText;
+                detail.invoiceDate = i.SelectSingleNode("invoiceDate").InnerText;
+                detail.salerName = i.SelectSingleNode("salerName").InnerText;
+                detail.amount = i.SelectSingleNode("amount").InnerText;
+                detail.taxAmount = i.SelectSingleNode("taxAmount").InnerText;
+                detail.invoiceType = i.SelectSingleNode("invoiceType").InnerText;
+                detail.buyerTaxNo = i.SelectSingleNode("buyerTaxNo").InnerText;
+                detail.salerAccount = i.SelectSingleNode("salerAccount").InnerText;
+                detail.checkStatus = i.SelectSingleNode("checkStatus").InnerText;
+                detail.checkErrcode = i.SelectSingleNode("checkErrcode").InnerText;
+                detail.checkCode = i.SelectSingleNode("checkCode").InnerText;
+                detail.checkDescription = i.SelectSingleNode("checkDescription").InnerText;
+                detail.invoiceMoney = i.SelectSingleNode("invoiceMoney").InnerText;
+                detail.printingSequenceNo = i.SelectSingleNode("printingSequenceNo").InnerText;
+                detail.taxRate = i.SelectSingleNode("taxRate").InnerText;
+                detail.electronicTicketNum = i.SelectSingleNode("electronicTicketNum").InnerText;
+                invoiceList.Add(detail);
+            }
+            chkResult.CheckDetailList = invoiceList;
+            return chkResult;
+        }
     }
 
 

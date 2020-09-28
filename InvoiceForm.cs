@@ -138,6 +138,40 @@ namespace InvoiceApp
             }
 
         }
+
+        private void btnCheck_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtCode.Text.Trim().Length ==0  )
+                    throw new Exception("查重发票代码不能为空");
+                if (txtNo.Text.Trim().Length == 0)
+                    throw new Exception("查重发票号码不能为空");
+                string sql = @"Select field0005 , field0008 ,t2.Name 
+                                        from v3x.dbo.formmain_5247 t1 
+                                        Left Join v3x.dbo.ORG_Member t2 On t1.field0006= t2.ID
+                                        where t1.ID In
+                                        (Select formmain_id from formson_5248 Where  field0015='{0}'  and field0016='{1}')";
+                sql = string.Format(sql, txtCode.Text.Trim(), txtNo.Text.Trim());
+                SQLServerHelper runner = new SQLServerHelper();
+                DataTable dt = runner.ExecuteSql(sql);
+                if (dt.Rows.Count == 0)
+                {
+                    txtResult.Text = "你输入的发票号码不存在";
+                }
+                else
+                {
+                    foreach(DataRow row in dt.Rows)
+                    {
+                        txtResult.Text = txtResult.Text +"单据：" + row["field0005"].ToString()+ " 单号：" + row["field0008"].ToString() + " 申请人："+  row["Name"].ToString() + "\r\n"  ;
+                    }
+                }
+            }
+            catch(Exception err)
+            {
+                MessageBox.Show(err.Message);
+            }
+        }
     }
 
 }
