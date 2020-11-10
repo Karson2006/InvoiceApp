@@ -17,10 +17,12 @@ namespace iTR.OP.Invoice
     public class InvoiceHelper
     {
         XmlDocument cfgDoc = null;
+        private string oawsUrl = "";
         public InvoiceHelper()
         {
             cfgDoc = new XmlDocument();
-            cfgDoc.Load("cfg.xml");
+            cfgDoc.Load(AppDomain.CurrentDomain.BaseDirectory + "\\cfg.xml");
+            oawsUrl = cfgDoc.SelectSingleNode("Configuration/OAWSUrl").InnerText;
         }
 
         /// <summary>
@@ -160,6 +162,111 @@ namespace iTR.OP.Invoice
             }
             chkResult.CheckDetailList = invoiceList;
             return chkResult;
+        }
+
+        public string InvoiceCheck(string xmlString)
+        {
+            string mode = "0",base64String="", InvoiceCode="", InvoiceNo="",InvoiceDate="",InvoiceMoney= "",InvoieVCode="";
+            string formID = "",formType="";
+
+            string result = "<UpdateData> " +
+                                  "<Result>{0}</Result>" +
+                                  "<InvoiceResult>{1}</InvoiceResult>" +
+                                  "<Description>{2}</Description></UpdateData>";
+           
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xmlString);
+
+                XmlNode node = doc.SelectSingleNode("UpdateData/Mode");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    mode = node.InnerText.Trim();
+
+                node = doc.SelectSingleNode("UpdateData/FormID");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    formID = node.InnerText.Trim();
+                else
+                    throw new System.Exception("FormID不能为空");
+
+
+                node = doc.SelectSingleNode("UpdateData/Form");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    formType = node.InnerText.Trim();
+                else
+                    throw new System.Exception("OA表单不能为空");
+
+                InvoiceCheckResult chkresult = null;
+                if (mode == "0")//扫描查验
+                {
+                    node = doc.SelectSingleNode("UpdateData/InvoiceData");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        base64String = node.InnerText.Trim();
+                    else
+                        throw new System.Exception("发票数据不能为空");
+                    chkresult = KingDeeApi.Check(OAInvoiceHelper.GetID(), base64String);
+                }
+                if (mode == "1")//手工
+                {
+                    node = doc.SelectSingleNode("UpdateData/InvoiceCode");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        InvoiceCode = node.InnerText.Trim();
+                    else
+                        throw new System.Exception("发票代码不能为空");
+
+                    node = doc.SelectSingleNode("UpdateData/InvoiceNo");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        InvoiceNo = node.InnerText.Trim();
+                    else
+                        throw new System.Exception("发票代码不能为空");
+
+
+                    node = doc.SelectSingleNode("UpdateData/InvoiceDate");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        InvoiceDate = node.InnerText.Trim();
+                    else
+                        throw new System.Exception("发票日期为空");
+
+                    node = doc.SelectSingleNode("UpdateData/InvoiceMoney");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        InvoiceMoney = node.InnerText.Trim();
+                    else
+                        throw new System.Exception("发票不含税金额为空");
+
+                    node = doc.SelectSingleNode("UpdateData/InvoiceVCode");
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        InvoieVCode = node.InnerText.Trim();
+
+                    chkresult = KingDeeApi.ManualCheck(InvoiceCode, InvoiceNo, InvoiceDate, InvoiceMoney, InvoieVCode);
+                }
+             
+             
+                string xmlResult = "";
+                // 只有通过验证的发票财务更新到OA发票数据库
+                if (chkresult != null)
+                {
+                    if (chkresult.errcode == "0000" && chkresult.CheckDetailList.Count > 0)
+                    {
+                        xmlResult = InvoiceCheckResult2Xml(chkresult);
+                        WebInvoke invoke = new WebInvoke();
+                        object[] param = new object[] { xmlResult, formID, formType };
+                        //OAInvoiceHelper o = new OAInvoiceHelper();
+                        //o.UpdateInvoiceDB(xmlResult, formID, formType);
+                        oawsUrl = oawsUrl + "FinaceAppService.asmx";
+                        xmlResult = invoke.Invoke(oawsUrl, "FinaceAppService", "CheckInvoiceData", param, null, 8000).ToString();
+                        result = xmlResult;
+                    }
+                }
+                else
+                {
+                    result = string.Format(result, "False", "异常", "不是发票或接口异常");
+                }
+            }
+            catch(System.Exception  err)
+            {
+                throw err;
+            }
+            return result;
         }
     }
 
