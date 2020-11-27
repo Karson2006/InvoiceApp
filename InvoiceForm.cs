@@ -162,15 +162,5 @@ namespace InvoiceApp
                 MessageBox.Show(err.Message);
             }
         }
-
-        private void InvoiceForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                //是否取消close操作
-                e.Cancel = true;
-                this.WindowState = FormWindowState.Minimized;
-            }
-        }
     }
 }

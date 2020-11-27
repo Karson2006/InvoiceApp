@@ -18,38 +18,8 @@ namespace InvoiceApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (IsRunning())
-            {
-                MessageBox.Show("发票验真应用已经在运行！");
-
-                return;
-            }
 
             Application.Run(new InvoiceForm());
-        }
-
-        public static bool IsRunning()
-        {
-            Process current = default(Process);
-            current = System.Diagnostics.Process.GetCurrentProcess();
-            Process[] processes = null;
-            processes = System.Diagnostics.Process.GetProcessesByName(current.ProcessName);
-
-            Process process = default(Process);
-
-            foreach (Process tempLoopVar_process in processes)
-            {
-                process = tempLoopVar_process;
-
-                if (process.Id != current.Id)
-                {
-                    if (System.Reflection.Assembly.GetExecutingAssembly().Location.Replace("/", "\\") == current.MainModule.FileName)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
     }
 }
