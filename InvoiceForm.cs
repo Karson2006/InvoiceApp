@@ -20,9 +20,10 @@ namespace InvoiceApp
 {
     public partial class InvoiceForm : Form
     {
-        ThreadStart start;
-        Thread thd;
-        int interval = 5;
+        private ThreadStart start;
+        private Thread thd;
+        private int interval = 5;
+
         public InvoiceForm()
         {
             try
@@ -33,24 +34,19 @@ namespace InvoiceApp
                 XmlDocument doc = new XmlDocument();
                 doc.Load("cfg.xml");
                 XmlNode node = doc.SelectSingleNode("Configuration/Interval");
-                if(node!=null|| node.InnerText.Trim().Length >0 )
+                if (node != null || node.InnerText.Trim().Length > 0)
                 {
                     interval = int.Parse(node.InnerText.Trim());
                 }
-
             }
             catch (Exception err)
             {
-                FileLogger.WriteLog(err.Message, 1,"InvoiceForm","Structure","DataService","ErrMeassag" );
+                FileLogger.WriteLog(err.Message, 1, "InvoiceForm", "Structure", "DataService", "ErrMeassag");
             }
-
         }
-
-
 
         private void btStart_Clik(object sender, EventArgs e)
         {
-           
             thd.IsBackground = true;
             thd.Start();
             btStart.Enabled = false;
@@ -66,11 +62,10 @@ namespace InvoiceApp
                     string result = oa.Run();
                     if (int.Parse(result) > 0)
                     {
-                        FileLogger.WriteLog( "成功处理", 1, "InvoiceForm", "ThreadAction", "DataService", "AppMessage");
+                        FileLogger.WriteLog("成功处理", 1, "InvoiceForm", "ThreadAction", "DataService", "AppMessage");
                     }
 
-
-                    System.Threading.Thread.Sleep(interval * 60*1000);
+                    System.Threading.Thread.Sleep(interval * 60 * 1000);
                 }
                 catch (Exception err)
                 {
@@ -83,10 +78,8 @@ namespace InvoiceApp
         private void btExit_Click(object sender, EventArgs e)
         {
             thd.Abort();
-            this.Dispose(); 
+            this.Dispose();
         }
-
-       
 
         private void InvoiceForm_StyleChanged(object sender, EventArgs e)
         {
@@ -112,8 +105,6 @@ namespace InvoiceApp
             }
         }
 
-      
-
         private void btDebug_Click(object sender, EventArgs e)
         {
             try
@@ -136,19 +127,18 @@ namespace InvoiceApp
                 this.Cursor = System.Windows.Forms.Cursors.Arrow;//设置鼠标为正常状态
                 MessageBox.Show(err.Message, "系统提示");
             }
-
         }
 
         private void btnCheck_Click(object sender, EventArgs e)
         {
             try
             {
-                if (txtCode.Text.Trim().Length ==0  )
+                if (txtCode.Text.Trim().Length == 0)
                     throw new Exception("查重发票代码不能为空");
                 if (txtNo.Text.Trim().Length == 0)
                     throw new Exception("查重发票号码不能为空");
-                string sql = @"Select field0005 , field0008 ,t2.Name 
-                                        from v3x.dbo.formmain_5247 t1 
+                string sql = @"Select field0005 , field0008 ,t2.Name
+                                        from v3x.dbo.formmain_5247 t1
                                         Left Join v3x.dbo.ORG_Member t2 On t1.field0006= t2.ID
                                         where t1.ID In
                                         (Select formmain_id from formson_5248 Where  field0015='{0}'  and field0016='{1}')";
@@ -161,17 +151,26 @@ namespace InvoiceApp
                 }
                 else
                 {
-                    foreach(DataRow row in dt.Rows)
+                    foreach (DataRow row in dt.Rows)
                     {
-                        txtResult.Text = txtResult.Text +"单据：" + row["field0005"].ToString()+ " 单号：" + row["field0008"].ToString() + " 申请人："+  row["Name"].ToString() + "\r\n"  ;
+                        txtResult.Text = txtResult.Text + "单据：" + row["field0005"].ToString() + " 单号：" + row["field0008"].ToString() + " 申请人：" + row["Name"].ToString() + "\r\n";
                     }
                 }
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 MessageBox.Show(err.Message);
             }
         }
-    }
 
+        private void InvoiceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                //是否取消close操作
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
+            }
+        }
+    }
 }
