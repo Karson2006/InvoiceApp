@@ -162,5 +162,13 @@ namespace InvoiceApp
                 MessageBox.Show(err.Message);
             }
         }
+
+        private void InvoiceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("是否关闭发票自动查验?", "提示信息", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }

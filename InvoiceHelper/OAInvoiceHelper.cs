@@ -16,29 +16,29 @@ namespace iTR.OP.Invoice
         //string privateKey = @"<RSAKeyValue><Modulus>mce2SdkzX+cmwffCYWxhy0O8IknEb9gJY6dMl6N+G1kdttqhk9X3jIyU8ST5CFY0Iax5naMloUgldcoI8AUx7YRiVOzCQpuDnj/iPwllEzbBUAAKnWlliklkz4vMi/XDMVhV87mW+h0Vi588mrTc9kW0iDWxNDKxL7CgTFquCs0=</Modulus><Exponent>AQAB</Exponent><P>yVj9ogyzt7bokcMTXcAS/ZR0kiDUoLBDgajwuXoiOwF4f1TLyCx49Zuf8PAEc6+J9Xr8+Llb+tWerQ49FlD47w==</P><Q>w4VoE7Gb/8QGRVUNjSzPPwdW64CufnhfDBiODptGQHvRi6Uc6FY4ZmvEDYrURbSlr3OaqWrg4yt5bJOu/LbgAw==</Q><DP>QaeM/Nxbddpkt7L+i6FoD9vqrwOZkdQoDw2BgVl78/WkzxBdaqZlwuC+JJh/OyHQQIWcG5aFkaM6nH96F97LbQ==</DP><DQ>Mq52GATGBzps1bQCW0HuRsxEP6+Pi8DwAlarHCYrw7NU0fnu0FrpK8NrgocmFxuIhz5ULO5DdR9jzj1J8sAEuQ==</DQ><InverseQ>xSwIuQDReGHDbJ2F8zhniie88UhHUc6XakmjPCEKWSIMa+xvzi5UKOTJvvPjB3TNf4ibuR8fSieHz1uJ+lx21Q==</InverseQ><D>YTDDmPDZc2dYK4c3JvOk6x6oLNOKf1V+uajm03/VF9u+1+5d6F120zGWgMHpUseIsy+avXJ7Oe+rHULPW0MtRgFtNScEK+LLSnFkLJz9QZcXVyRE4QTCcYM5uLW5bYa9324ZGjBmzYSWOZ10V/FjZ8X81AutMDQqBv67ToZ6F1E=</D></RSAKeyValue>";
         //string CnnString = "";
         private XmlDocument doc = null;
-      
+
         public OAInvoiceHelper()
         {
             try
             {
                 doc = new XmlDocument();
-               
+
                 doc.Load(AppDomain.CurrentDomain.BaseDirectory + "\\cfg.xml");
                 //CnnString = doc.SelectSingleNode("Configuration/CnnString").InnerText;
                 //CnnString = iTR.Lib.Common.RSADecrypt(privateKey, CnnString);
-              
             }
             catch (Exception err)
             {
                 throw err;
             }
         }
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mode">0:识别+查验+所有发票</param>
         /// <returns></returns>
-        public string Run(int mode =0,string  billNo="")
+        public string Run(int mode = 0, string billNo = "")
         {
             string result = "0";
             string fileName = "";
@@ -48,34 +48,32 @@ namespace iTR.OP.Invoice
             string sql = "";
             DateTime checkDate;
 
-
-            FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run"+ billNo, "DataService", "AppMessage");
+            FileLogger.WriteLog("开始发票查验", 1, "OAInvoicehelper", "Run" + billNo, "DataService", "AppMessage");
             try
             {
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
-                sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033,"+
-                          "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 "+
+                sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033," +
+                          "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 " +
                           "    from formson_5248 ";
                 if (mode == 0)
                 {
                     sql = sql + " Where    isnull(field0033,0)<2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
                                       "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070')  " +
                                       "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') ";
-                    
+
                     //sql = sql + " Where    field0020='-1208696524531874797'";
                 }
-            
-                if(mode ==1)
+
+                if (mode == 1)
                 {
                     sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
-                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票')  and  isnull(field0023,'')   Not In('通过') " +
+                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票','普通纸质发票')  and  isnull(field0023,'')   Not In('通过') " +
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 InvoiceHelper invoice = new InvoiceHelper();
-                
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -103,14 +101,15 @@ namespace iTR.OP.Invoice
                         continue;
                     }
                     //调用成功
-                    if (fileName.Length  > 0)
+                    if (fileName.Length > 0)
                         FileLogger.WriteLog("调用接口成功,文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
 
-                  
                     switch (chkResult.errcode)//操作错误代码
                     {
                         case "0000"://调用成功
+
                             #region 调用成功
+
                             int invoiceSeq = 0;
                             string rowID = "-1";
                             foreach (InvoiceCheckDetail i in chkResult.CheckDetailList)//每张发票查验结果
@@ -135,7 +134,7 @@ namespace iTR.OP.Invoice
                                             if (i.taxAmount.Trim().Length > 0)
                                                 taxamout = decimal.Parse(i.taxAmount.Trim());
 
-                                            sql = @"Select field0015 from formson_5248 Where field0016='{0}' and  field0015='{1}'  and  Isnull(field0027,'') = '通过'";//验重判断
+                                            sql = @"Select field0015 from v3x.dbo.formson_5248 Where (Select count(*) From  v3x.dbo.formson_5248 where field0015='{0}' and field0016='{1}') > 1";//验重判断
                                             sql = string.Format(sql, i.invoiceNo, i.invoiceCode);
                                             DataTable dt1 = new DataTable();
                                             dt1 = runner.ExecuteSql(sql);
@@ -144,7 +143,6 @@ namespace iTR.OP.Invoice
 
                                             if (invoiceSeq == 1)//文件中只有一张发票
                                             {
-
                                             }
                                             else//文件中有多张发票,先插入新纪录（先判断是否存在，不存在则插入）
                                             {
@@ -169,7 +167,6 @@ namespace iTR.OP.Invoice
                                             else
                                                 amount = decimal.Parse(i.totalAmount);
 
-
                                             if (i.invoiceMoney.ToString().Trim().Length == 0)
                                                 i.invoiceMoney = "0";
 
@@ -192,7 +189,7 @@ namespace iTR.OP.Invoice
                                         break;
 
                                     case "1001"://超过该张票当天查验次数,不处理
-                                        checkDate =Convert.ToDateTime( DateTime.Now.AddDays(1).ToString("yyyy-MM-dd 01:30:00"));
+                                        checkDate = Convert.ToDateTime(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd 01:30:00"));
                                         sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
                                         sql = string.Format(sql, 2, checkDate, row["ID"].ToString(), i.checkDescription, i.checkCode);
                                         runner.ExecuteSqlNone(sql);
@@ -204,48 +201,57 @@ namespace iTR.OP.Invoice
                                         sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), i.checkDescription, i.checkCode);
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "1014"://当天票不能查验，,查验次数+1
                                         checkDate = DateTime.Now;
                                         sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0017 ='{2}',field0025='{4}',field0024 ='{5}'   Where ID={3}";
                                         sql = string.Format(sql, chkCount, checkDate.AddDays(1), checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
                                         runner.ExecuteSqlNone(sql);
                                         break;
-                                    case "1015"://超过一年的不能查验， 
+
+                                    case "1015"://超过一年的不能查验，
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "发票超1年", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "3110"://发票查验地区税局服务暂停
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "地方税局暂定查验服务", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "10002"://在官方数据库查不到此发票
                                         sql = @"update formson_5248 Set field0033= {0} , field0023 ='{1}' , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "此票不存在", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "10003"://发票查验接口无法正常使用,退出应用
                                                  //Process.GetCurrentProcess().Kill();
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "接口错误", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "10004"://发票作废
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "此票作废", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "10005"://
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 2, "发票信息不全", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     case "10300"://
                                         sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
                                         sql = string.Format(sql, 3, "发票串号", row["ID"].ToString());
                                         runner.ExecuteSqlNone(sql);
                                         break;
+
                                     default://10001,
                                         checkDate = DateTime.Now;
                                         SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, i.checkDescription, i.checkErrcode);
@@ -253,60 +259,72 @@ namespace iTR.OP.Invoice
                                 }
                             }
                             break;
-                        #endregion
+
+                        #endregion 调用成功
+
                         case "20000"://调用接口发生异常
+
                             #region 调用接口错误处理，
+
                             //Process.GetCurrentProcess().Kill();
                             checkDate = DateTime.Now.AddHours(2);
                             sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
                             sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
                             runner.ExecuteSqlNone(sql);
-                            #endregion
+
+                            #endregion 调用接口错误处理，
+
                             break;
+
                         case "1011"://查验超时,2小时后再处理,查验次数+1
                             checkDate = DateTime.Now.AddHours(2);
                             sql = @"update formson_5248 Set field0033= {0} ,field0042 ='{1}' ,field0025='{3}',field0024 ='{4}' Where ID={2}";
                             sql = string.Format(sql, chkCount, checkDate, row["ID"].ToString(), chkResult.description, chkResult.errcode);
                             runner.ExecuteSqlNone(sql);
                             break;
+
                         case "0310"://调用接口发生异常
+
                             #region 调用接口错误处理
+
                             checkDate = DateTime.Now;
                             SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, chkResult.description, chkResult.errcode);
-                            #endregion
+
+                            #endregion 调用接口错误处理
+
                             break;
+
                         case "333333"://附件超大
+
                             #region 附件超大
+
                             checkDate = DateTime.Now;
                             SetInvoceCheckStatus(row["ID"].ToString(), checkDate, 2, chkResult.description, chkResult.errcode);
-                            #endregion
+
+                            #endregion 附件超大
+
                             break;
                     }
                     //根据接口返回情况，处理发票数据库记录
                 }
                 //返回已处理记录数
                 result = dt.Rows.Count.ToString();
-
             }
-            catch(Exception err)
+            catch (Exception err)
             {
-               
-                FileLogger.WriteLog( "Err:"  + err.Message,  1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
+                FileLogger.WriteLog("Err:" + err.Message, 1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
             }
             FileLogger.WriteLog("结束发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             return result;
         }
 
-
-       
-        public static string GetID ()
+        public static string GetID()
         {
             string result = "-1";
             try
             {
-        
                 byte[] buffer = Guid.NewGuid().ToByteArray();
-                result= BitConverter.ToInt64(buffer, 0).ToString();
+                result = BitConverter.ToInt64(buffer, 0).ToString();
             }
             catch (Exception err)
             {
@@ -314,7 +332,8 @@ namespace iTR.OP.Invoice
             }
             return result;
         }
-        private void SetInvoceCheckStatus(string invoceIID,DateTime checkDate, int chkCount = 3,string errdescription = "",string errCode="")
+
+        private void SetInvoceCheckStatus(string invoceIID, DateTime checkDate, int chkCount = 3, string errdescription = "", string errCode = "")
         {
             string sql = "";
             SQLServerHelper runner = new SQLServerHelper();
@@ -324,15 +343,14 @@ namespace iTR.OP.Invoice
             runner.ExecuteSqlNone(sql);
         }
 
-        public string UpdateInvoiceDB(string xmlResult,string formID,string formType)
+        public string UpdateInvoiceDB(string xmlResult, string formID, string formType)
         {
             string result = "<UpdateData> " +
                                     "<Result>{0}</Result>" +
                                     "<InvoiceResult>{1}</InvoiceResult>" +
-                                    "<Description>{2}</Description></UpdateData>"; 
+                                    "<Description>{2}</Description></UpdateData>";
             try
             {
-                
                 string field0005 = formType;
                 string field0029 = "";
                 string field0035 = "";//源主表查验结果字段
@@ -348,8 +366,6 @@ namespace iTR.OP.Invoice
                 string field0048 = "";//子表发票代码字段
                 string field0051 = "";//子表发票校验码字段
                 string field0052 = "";//子表是否重验字段
-
-               
 
                 InvoiceCheckResult chkResult = InvoiceHelper.Xml2InvoiceCheckResult(xmlResult);
                 chkResult = CheckInvoiceData(chkResult);
@@ -386,6 +402,7 @@ namespace iTR.OP.Invoice
                                 field0051 = "field0073";
                                 field0052 = "field0070";
                                 break;
+
                             case "招待费报销单":
                                 field0029 = "formmain_5935";
                                 field0035 = "field0016";
@@ -405,7 +422,7 @@ namespace iTR.OP.Invoice
                                 break;
                         }
                         //插入发票库主表
-                        sql = @"Declare @formmainID numeric(19,0) 
+                        sql = @"Declare @formmainID numeric(19,0)
                                           EXEC  DataService.[dbo].[Insert_Invoice_Data20]  @formmainID output,'','','{0}','{1}','','','','','{2}','-1','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}','{15}','{16}'";
                         sql = string.Format(sql, DateTime.Now.ToString("yyyy-MM-dd"), field0005, field0029, field0035, field0036, field0037, field0038, field0040, field0041, field0044, field0045, field0046, field0047, field0048, field0051, field0052, formID);
                         runner.ExecuteSqlNone(sql);
@@ -432,18 +449,19 @@ namespace iTR.OP.Invoice
                     result = string.Format(result, "False", "异常", chkResult.description);
                 }
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 result = string.Format(result, "False", "异常", err.Message);
             }
             return result;
         }
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="chkResult">发票查验结果对象</param>
         /// <returns></returns>
-        private InvoiceCheckResult CheckInvoiceData( InvoiceCheckResult chkResult )
+        private InvoiceCheckResult CheckInvoiceData(InvoiceCheckResult chkResult)
         {
             string result = "通过", sql = "", resultDetail = "";
 
@@ -452,20 +470,22 @@ namespace iTR.OP.Invoice
             switch (chkResult.errcode)//操作错误代码
             {
                 case "0000"://调用成功
+
                     #region 调用成功
+
                     int invoiceSeq = 0;
-                    for(int i =0;i<  chkResult.CheckDetailList.Count;i++)//每张发票查验结果
+                    for (int i = 0; i < chkResult.CheckDetailList.Count; i++)//每张发票查验结果
                     {
                         switch (chkResult.CheckDetailList[i].checkErrcode)
                         {
                             case "0000":
-                               
+
                                 //类型为其他、发票号为空，不是发票,设置不是发票状态，以免下次还继续查验
                                 if (chkResult.CheckDetailList[i].invoiceNo.Trim().Length == 0)
                                 {
                                     chkResult.CheckDetailList[i].checkStatus = "非发票";
                                     result = "异常";
-                                    resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + ";":"" +" 非发票" ;
+                                    resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + ";" : "" + " 非发票";
                                 }
                                 if (chkResult.CheckDetailList[i].invoiceNo.Trim().Length > 0)
                                 {
@@ -480,10 +500,10 @@ namespace iTR.OP.Invoice
                                     {
                                         chkResult.CheckDetailList[i].checkStatus = "重号";
                                         result = "异常";
-                                        resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; ":"" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + " 重号" ;
+                                        resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + " 重号";
                                     }
-                                    if (chkResult.CheckDetailList[i].totalAmount==null)
-                                        chkResult.CheckDetailList[i].totalAmount="0";
+                                    if (chkResult.CheckDetailList[i].totalAmount == null)
+                                        chkResult.CheckDetailList[i].totalAmount = "0";
 
                                     if (chkResult.CheckDetailList[i].invoiceMoney.ToString().Trim().Length == 0)
                                         chkResult.CheckDetailList[i].invoiceMoney = "0";
@@ -491,92 +511,113 @@ namespace iTR.OP.Invoice
                                 break;
 
                             case "1001"://超过该张票当天查验次数,不处理
-                               
+
                                 chkResult.CheckDetailList[i].checkStatus = "当天查验次数";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "1002"://查验超时,2小时后再处理,查验次数+1
                                 chkResult.CheckDetailList[i].checkStatus = "查验超时";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "1014"://当天票不能查验，,查验次数+1
                                 chkResult.CheckDetailList[i].checkStatus = "当天票不查验";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
-                            case "1015"://超过一年的不能查验， 
+
+                            case "1015"://超过一年的不能查验，
                                 chkResult.CheckDetailList[i].checkStatus = "超1年票";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "3110"://发票查验地区税局服务暂停
                                 chkResult.CheckDetailList[i].checkStatus = "官网暂停服务";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "10002"://在官方数据库查不到此发票
                                 chkResult.CheckDetailList[i].checkStatus = "此票不存在";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "10003"://发票查验接口无法正常使用,退出应用
                                 chkResult.CheckDetailList[i].checkStatus = "接口错误";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "10004"://发票作废
                                 chkResult.CheckDetailList[i].checkStatus = "此票作废";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "10005"://
                                 chkResult.CheckDetailList[i].checkStatus = "发票信息不全";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             case "10300"://
                                 chkResult.CheckDetailList[i].checkStatus = "发票串号";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
+
                             default://10001,
                                 chkResult.CheckDetailList[i].checkStatus = "查验异常";
                                 result = "异常";
                                 resultDetail = resultDetail.Trim().Length > 0 ? resultDetail + "; " : "" + "发票号：" + chkResult.CheckDetailList[i].invoiceNo + chkResult.CheckDetailList[i].checkStatus;
                                 break;
                         }
-
                     }
                     break;
-                #endregion
+
+                #endregion 调用成功
+
                 case "20000"://调用接口发生异常
-                  
+
                     result = "异常";
                     resultDetail = "调用接口发生异常";
                     break;
+
                 case "1011"://查验超时,2小时后再处理,查验次数+1
                     result = "异常";
                     resultDetail = chkResult.description;
                     break;
+
                 case "0310"://调用接口发生异常
+
                     #region 调用接口错误处理
+
                     result = "异常";
                     resultDetail = chkResult.description;
-                    #endregion
+
+                    #endregion 调用接口错误处理
+
                     break;
+
                 case "333333"://附件超大
+
                     #region 附件超大
+
                     result = "异常";
-                    resultDetail ="附件大小超过4M";
-                    #endregion
+                    resultDetail = "附件大小超过4M";
+
+                    #endregion 附件超大
+
                     break;
             }
             chkResult.errcode = result;
             chkResult.description = resultDetail;
             return chkResult;
         }
-        
     }
 }

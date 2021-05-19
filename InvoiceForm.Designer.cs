@@ -184,6 +184,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "发票查验应用";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InvoiceForm_FormClosing);
             this.StyleChanged += new System.EventHandler(this.InvoiceForm_StyleChanged);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -16,10 +16,30 @@ namespace InvoiceApp
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            if (IsApplicationAlreadyRunning() == true)
+            {
+                MessageBox.Show($"发票自动查验程序已经在运行!");
+            }
+            else
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new InvoiceForm());
+            }
+        }
 
-            Application.Run(new InvoiceForm());
+        private static bool IsApplicationAlreadyRunning()
+        {
+            string proc = Process.GetCurrentProcess().ProcessName;
+            Process[] processes = Process.GetProcessesByName(proc);
+            if (processes.Length > 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
