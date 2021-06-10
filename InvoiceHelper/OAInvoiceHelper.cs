@@ -68,7 +68,7 @@ namespace iTR.OP.Invoice
                 if (mode == 1)
                 {
                     sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
-                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票','普通纸质发票')  and  isnull(field0023,'')   Not In('通过') " +
+                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票','普通纸质发票')  and  isnull(field0027,'')   Not In('通过') " +
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();

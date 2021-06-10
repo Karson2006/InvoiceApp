@@ -45,12 +45,7 @@ namespace InvoiceApp
             }
         }
 
-        private void btStart_Clik(object sender, EventArgs e)
-        {
-            thd.IsBackground = true;
-            thd.Start();
-            btStart.Enabled = false;
-        }
+ 
 
         public void ThreadAction()
         {
@@ -169,6 +164,22 @@ namespace InvoiceApp
             {
                 e.Cancel = true;
             }
+        }
+
+        private void btnstart_Click(object sender, EventArgs e)
+        {
+            //Task.Run(ThreadAction);
+
+            //thd.Abort();
+            //thd.IsBackground = true;
+            //thd.Start();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            thd.IsBackground = true;
+            thd.Start();
+            button1.Enabled = false;
         }
     }
 }

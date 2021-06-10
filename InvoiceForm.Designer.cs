@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InvoiceForm));
-            this.btStart = new System.Windows.Forms.Button();
             this.btExit = new System.Windows.Forms.Button();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -43,17 +42,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txtResult = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // btStart
-            // 
-            this.btStart.Location = new System.Drawing.Point(299, 142);
-            this.btStart.Name = "btStart";
-            this.btStart.Size = new System.Drawing.Size(62, 23);
-            this.btStart.TabIndex = 0;
-            this.btStart.Text = "启动";
-            this.btStart.UseVisualStyleBackColor = true;
-            this.btStart.Click += new System.EventHandler(this.btStart_Clik);
             // 
             // btExit
             // 
@@ -159,11 +149,22 @@
             this.txtResult.Size = new System.Drawing.Size(243, 105);
             this.txtResult.TabIndex = 13;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(299, 142);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(62, 23);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "启 动";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // InvoiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(364, 194);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.txtResult);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtNo);
@@ -175,15 +176,12 @@
             this.Controls.Add(this.txFileName);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btExit);
-            this.Controls.Add(this.btStart);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "InvoiceForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "发票查验应用";
-            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InvoiceForm_FormClosing);
             this.StyleChanged += new System.EventHandler(this.InvoiceForm_StyleChanged);
             this.ResumeLayout(false);
@@ -192,8 +190,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button btStart;
         private System.Windows.Forms.Button btExit;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.Label label1;
@@ -206,6 +202,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtResult;
+        private System.Windows.Forms.Button button1;
     }
 }
 
