@@ -131,6 +131,7 @@ namespace Invoice.Utils
             {
                 //获取查验结果
                 jsonstr = PostJson(ApiUtil.BaseUrl + ApiUtil.TextCheckUrl + token, jsonstr);
+                jsonstr = jsonstr.Replace("'", "");
                 //保存到日志的验真结果
                 logjson = jsonstr;
                 recive = GetCheckResult(jsonstr);
