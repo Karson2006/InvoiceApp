@@ -68,7 +68,7 @@ namespace iTR.OP.Invoice
             }
             catch (System.Exception err)
             {
-                FileLogger.WriteLog("处理文件异常： " + err.Message, 1, "InvoiceHelper", "Check_Scan", "DataService", "ErrMessage");
+                FileLogger.WriteLog("处理文件异常： " + err.Message+err.StackTrace+err.InnerException??"", 1, "InvoiceHelper", "Check_Scan", "DataService", "ErrMessage");
             }
 
             return result;

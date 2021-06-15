@@ -55,7 +55,7 @@ namespace iTR.OP.Invoice
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
                 sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033," +
                           "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 " +
-                          "    from formson_5248 ";
+                          "    from formson_5248   ";
                 if (mode == 0)
                 {
                     sql = sql + " Where    isnull(field0033,0)<2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
@@ -310,20 +310,16 @@ namespace iTR.OP.Invoice
                     }
                     catch (Exception ex)
                     {
-                        FileLogger.WriteLog("Err:" + ex.Message, 1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
+                        FileLogger.WriteLog("Err:" + ex.Message + ex.StackTrace + ex.InnerException ?? "", 1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
                     }
                     //根据接口返回情况，处理发票数据库记录
                 }
-
-
-
-
                 //返回已处理记录数
                 result = dt.Rows.Count.ToString();
             }
             catch (Exception err)
             {
-                FileLogger.WriteLog("Err:" + err.Message, 1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
+                FileLogger.WriteLog("Err:" + err.Message + err.StackTrace + err.InnerException ?? "", 1, "OAInvoicehelper", fileName, "DataService", "ErrMessage");
             }
             FileLogger.WriteLog("结束发票查验", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             return result;
