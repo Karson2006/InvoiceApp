@@ -237,7 +237,7 @@ namespace Invoice.Utils
             catch (Exception ex)
             {
                 item.checkErrcode = "10001";
-                item.checkDescription = ex.Message;
+                item.checkDescription = "查验失败";
                 //添加发票
                 //发票代码转具体发票
                 if (item.invoiceType!=null)
