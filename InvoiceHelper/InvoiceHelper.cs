@@ -41,8 +41,9 @@ namespace iTR.OP.Invoice
                 {
                     //解密后的文件名
                     string decryptFileName = fileName + "_D";
-                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(fileName);
 
+
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(fileName);
                     if (fileInfo.Length > 1024 * 1024 * 4)
                     {
                         result = new InvoiceCheckResult();

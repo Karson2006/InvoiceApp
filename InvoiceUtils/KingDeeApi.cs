@@ -137,43 +137,43 @@ namespace Invoice.Utils
                 recive = GetCheckResult(jsonstr);
 
                 //验真状态 识别成功都有状态
-                item.checkErrcode = recive.errcode == null ? "" : recive.errcode;
-                item.checkDescription = recive.description == null ? "" : recive.description;
+                item.checkErrcode = recive?.errcode == null ? "" : recive.errcode;
+                item.checkDescription = recive?.description == null ? "" : recive.description;
                 //避免验真不通过之后，获取null值发生异常
-                item.serialNo = recive.data.serialNo == null ? "" : recive.data.serialNo;
-                item.salerName = recive.data.salerName == null ? "" : recive.data.salerName;
-                item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
-                item.amount = recive.data.amount == null ? "" : recive.data.amount;
-                item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
-                item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
+                item.serialNo = recive?.data?.serialNo == null ? "" : recive.data.serialNo;
+                item.salerName = recive?.data?.salerName == null ? "" : recive.data.salerName;
+                item.salerAccount = recive?.data?.salerAccount == null ? "" : recive.data.salerAccount;
+                item.amount = recive?.data?.amount == null ? "" : recive.data.amount;
+                item.buyerTaxNo = recive?.data?.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
+                item.taxAmount = recive?.data?.taxAmount == null ? "" : recive.data.taxAmount;
 
                 //手动查验没有识别数据
                 if (type == 2)
                 {
-                    item.invoiceType = recive.data.invoiceType == null ? "" : recive.data.invoiceType;
-                    item.invoiceCode = recive.data.invoiceCode == null ? "" : recive.data.invoiceCode;
-                    item.invoiceNo = recive.data.invoiceNo == null ? "" : recive.data.invoiceNo;
-                    item.invoiceDate = recive.data.invoiceDate == null ? "" : recive.data.invoiceDate;
-                    item.invoiceMoney = recive.data.invoiceMoney == null ? "" : recive.data.invoiceMoney;
-                    item.checkCode = recive.data.checkCode == null ? "" : recive.data.checkCode;
-                    item.totalAmount = recive.data.totalAmount == null ? "" : recive.data.totalAmount;
-                    item.taxRate = recive.data.taxRate == null ? "" : recive.data.taxRate;
-                    item.taxAmount = recive.data.taxAmount == null ? "" : recive.data.taxAmount;
-                    item.serialNo = recive.data.serialNo == null ? "" : recive.data.serialNo;
-                    item.salerName = recive.data.salerName == null ? "" : recive.data.salerName;
-                    item.salerAccount = recive.data.salerAccount == null ? "" : recive.data.salerAccount;
-                    item.amount = recive.data.amount == null ? "" : recive.data.amount;
-                    item.electronicTicketNum = recive.data.electronicTicketNum == null ? "" : recive.data.electronicTicketNum;
-                    item.printingSequenceNo = recive.data.printingSequenceNo == null ? "" : recive.data.printingSequenceNo;
+                    item.invoiceType = recive?.data?.invoiceType == null ? "" : recive.data.invoiceType;
+                    item.invoiceCode = recive?.data?.invoiceCode == null ? "" : recive.data.invoiceCode;
+                    item.invoiceNo = recive?.data?.invoiceNo == null ? "" : recive.data.invoiceNo;
+                    item.invoiceDate = recive?.data?.invoiceDate == null ? "" : recive.data.invoiceDate;
+                    item.invoiceMoney = recive?.data?.invoiceMoney == null ? "" : recive.data.invoiceMoney;
+                    item.checkCode = recive?.data?.checkCode == null ? "" : recive.data.checkCode;
+                    item.totalAmount = recive?.data?.totalAmount == null ? "" : recive.data.totalAmount;
+                    item.taxRate = recive?.data?.taxRate == null ? "" : recive.data.taxRate;
+                    item.taxAmount = recive?.data?.taxAmount == null ? "" : recive.data.taxAmount;
+                    item.serialNo = recive?.data?.serialNo == null ? "" : recive.data.serialNo;
+                    item.salerName = recive?.data?.salerName == null ? "" : recive.data.salerName;
+                    item.salerAccount = recive?.data?.salerAccount == null ? "" : recive.data.salerAccount;
+                    item.amount = recive?.data?.amount == null ? "" : recive.data.amount;
+                    item.electronicTicketNum = recive?.data?.electronicTicketNum == null ? "" : recive.data.electronicTicketNum;
+                    item.printingSequenceNo = recive?.data?.printingSequenceNo ?? "";
 
                 }
-                item.buyerTaxNo = recive.data.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
+                item.buyerTaxNo = recive?.data?.buyerTaxNo == null ? "" : recive.data.buyerTaxNo;
                 //税率
                 if (taxtype.Contains(item.invoiceType))
                 {
-                    if (recive.data.items != null)
+                    if (recive?.data?.items != null)
                     {
-                        item.taxRate = recive.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
+                        item.taxRate = recive?.data.items[0].taxRate == null ? "" : recive.data.items[0].taxRate;
                     }
 
                 }
@@ -185,9 +185,9 @@ namespace Invoice.Utils
                 }
 
                 //设置查验结果
-                if (recive.errcode == "0000")
+                if (recive?.errcode == "0000")
                 {
-                    if (recive.data.cancelMark == "N")
+                    if (recive?.data?.cancelMark == "N")
                     {
                         item.checkStatus = "通过";
                         //在加一次判断，免税的发票，设置0%，没有税率的也设置0%
@@ -250,7 +250,7 @@ namespace Invoice.Utils
                 {
                     invoiceCheckResult.CheckDetailList.Add(item);
                 }
-                InvoiceLogger.WriteToDB("验真异常:" + ex.Message, invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName, logjson, item.invoiceType);
+                InvoiceLogger.WriteToDB("验真异常:" + ex.Message+ex.StackTrace??""+ex.InnerException??"", invoiceCheckResult.errcode, "", invoiceCheckResult.description, fileName, logjson, item.invoiceType);
             }
 
             return item;
