@@ -37,6 +37,7 @@ namespace iTR.OP.Invoice
             InvoiceCheckResult result = null;
             try
             {
+                FileLogger.WriteLog("开始调用KingDeeApi接口", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
                 if (mode == "1")
                 {
                     //解密后的文件名
@@ -66,6 +67,7 @@ namespace iTR.OP.Invoice
                 {
                     result = KingDeeApi.ManualCheck(param["InvoiceCode"], param["InvoiceNo"], param["InvoiceDate"], param["InvoiceMoney"], param["InvoieCheckCode"]);
                 }
+                FileLogger.WriteLog("结束调用KingDeeApi接口", 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
             }
             catch (System.Exception err)
             {

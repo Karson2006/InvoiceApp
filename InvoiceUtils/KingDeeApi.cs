@@ -130,8 +130,11 @@ namespace Invoice.Utils
             try
             {
                 //获取查验结果
+                FileLogger.WriteLog("开始调用金蝶发票查验接口", 1, "KingDeeApi", "Run", "DataService", "AppMessage");
                 jsonstr = PostJson(ApiUtil.BaseUrl + ApiUtil.TextCheckUrl + token, jsonstr);
+                FileLogger.WriteLog("金蝶接口查验结果" + jsonstr, 1, "KingDeeApi", "Run", "DataService", "AppMessage");
                 jsonstr = jsonstr.Replace("'", "");
+                FileLogger.WriteLog("结束调用金蝶发票查验接口", 1, "KingDeeApi", "Run", "DataService", "AppMessage");
                 //保存到日志的验真结果
                 logjson = jsonstr;
                 recive = GetCheckResult(jsonstr);

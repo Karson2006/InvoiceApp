@@ -72,7 +72,9 @@ namespace iTR.OP.Invoice
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();
+                FileLogger.WriteLog("sql获取未查询发票 "+ sql, 1, "OAInvoicehelper", "Run" + billNo , "DataService", "AppMessage");
                 DataTable dt = runner.ExecuteSql(sql);
+                FileLogger.WriteLog("sql获取未查询发票完成", 1, "OAInvoicehelper", "Run" + billNo, "DataService", "AppMessage");
                 InvoiceHelper invoice = new InvoiceHelper();
 
                 foreach (DataRow row in dt.Rows)
@@ -82,6 +84,7 @@ namespace iTR.OP.Invoice
                         chkCount = int.Parse(row["field0033"].ToString()) + 1;//设置检查次数
                         InvoiceCheckResult chkResult = new InvoiceCheckResult();
                         //调用金蝶发票查验接口
+                        FileLogger.WriteLog("开始获取Scan_Check查验结果", 1, "OAInvoicehelper", "Run"+billNo, "DataService", "AppMessage");
                         if (row["field0053"].ToString() == "-4875734478274671070")//手工重验
                         {
                             Dictionary<string, string> param = new Dictionary<string, string>();
@@ -102,6 +105,7 @@ namespace iTR.OP.Invoice
                             FileLogger.WriteLog("调用发票云接口错误：返回值为空 FileName:" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
                             continue;
                         }
+                        FileLogger.WriteLog("结束获取Scan_Check查验结果", 1, "OAInvoicehelper", "Run" + billNo, "DataService", "AppMessage");
                         //调用成功
                         if (fileName.Length > 0)
                             FileLogger.WriteLog("调用接口成功,文件：" + fileName, 1, "OAInvoicehelper", "Run", "DataService", "AppMessage");
