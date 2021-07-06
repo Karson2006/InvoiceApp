@@ -58,6 +58,7 @@ namespace iTR.OP.Invoice
                         {
                             EncrptionUtil.AttDecrypt(fileName, decryptFileName);
                         }
+                        
                         byte[] bytes = bytes = GetBytesByPath(decryptFileName);
                         string base64String = Convert.ToBase64String(bytes);
                         result = KingDeeApi.Check(fileName, base64String);

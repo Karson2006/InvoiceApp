@@ -115,6 +115,7 @@ namespace Invoice.Utils
                 {
                     invoiceCheckResult.errcode = "20000";
                     invoiceCheckResult.description = ex.Message;
+                
                     InvoiceLogger.WriteToDB("手动查验异常退出:"+ ex.Message, invoiceCheckResult.errcode,"", "", "", logjson, "");
                 }
             }

@@ -58,7 +58,7 @@ namespace iTR.OP.Invoice
                           "    from formson_5248   ";
                 if (mode == 0)
                 {
-                    sql = sql + " Where    isnull(field0033,0) < 4 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
+                    sql = sql + " Where    isnull(field0033,0) < 2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
                                       "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070')  " +
                                       "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') order by field0042 desc";
 
