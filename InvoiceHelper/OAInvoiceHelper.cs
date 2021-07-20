@@ -124,24 +124,24 @@ namespace iTR.OP.Invoice
                                     {
                                         case "0000":
                                             rowID = row["ID"].ToString();
-                                            //类型为其他、发票号为空，不是发票,设置不是发票状态，以免下次还继续查验
-                                            if (i.invoiceNo.Trim().Length == 0)
+                                            //类型为其他、发票号码或代码为空，不是发票,设置不是发票状态，以免下次还继续查验
+                                            //王天池 2021-07-20 增加代码为空时也设置为不是发票
+                                            if (i.invoiceNo.Trim().Length == 0 || i.invoiceCode.Trim().Length==0)
                                             {
                                                 sql = "Update formson_5248 Set field0039='否' Where ID='" + rowID + "'";
                                                 runner.ExecuteSqlNone(sql);
                                                 continue;
                                             }
-
-                                            if (i.invoiceNo.Trim().Length > 0)
+                                            else
                                             {
                                                 decimal taxamout = 0;
                                                 invoiceSeq = invoiceSeq + 1;
 
                                                 if (i.taxAmount.Trim().Length > 0)
                                                     taxamout = decimal.Parse(i.taxAmount.Trim());
-
+                                                // 王天池，2021-07-21，修正代码与号码设置反了的问题
                                                 sql = @"Select field0015 from v3x.dbo.formson_5248 Where (Select count(*) From  v3x.dbo.formson_5248 where field0015='{0}' and field0016='{1}') > 1";//验重判断
-                                                sql = string.Format(sql, i.invoiceNo, i.invoiceCode);
+                                                sql = string.Format(sql, i.invoiceCode,i.invoiceNo);
                                                 DataTable dt1 = new DataTable();
                                                 dt1 = runner.ExecuteSql(sql);
                                                 if (dt1.Rows.Count > 0)

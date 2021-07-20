@@ -38,9 +38,6 @@
     <ApplicationIcon>invoiceapp.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="iTR.Lib">
-      <HintPath>..\iTR\Release\iTR.Lib.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Release\Newtonsoft.Json.dll</HintPath>
@@ -95,6 +92,10 @@
     <Content Include="invoiceapp.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\iTR\iTR.Lib\iTR.Lib.csproj">
+      <Project>{603e8302-8f06-479f-a3f4-adf2a0a2537d}</Project>
+      <Name>iTR.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="InvoiceHelper\InvoiceHelper.csproj">
       <Project>{ab33bbb0-998f-4161-bc90-42e69bdb10ba}</Project>
       <Name>InvoiceHelper</Name>
