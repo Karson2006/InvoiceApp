@@ -136,6 +136,7 @@ namespace iTR.OP.Invoice
                                             {
                                                 decimal taxamout = 0;
                                                 invoiceSeq = invoiceSeq + 1;
+                                                string lianhao = "";//连号备注
 
                                                 if (i.taxAmount.Trim().Length > 0)
                                                     taxamout = decimal.Parse(i.taxAmount.Trim());
@@ -145,7 +146,34 @@ namespace iTR.OP.Invoice
                                                 DataTable dt1 = new DataTable();
                                                 dt1 = runner.ExecuteSql(sql);
                                                 if (dt1.Rows.Count > 0)
+                                                {
                                                     i.checkStatus = "重号";
+                                                }
+                                                else// 增加发票连号检查功能，王天池，2021-07-20
+                                                {
+                                                    sql = @"Select  distinct  t2.field0005 ,t2.field0008 
+                                                            From v3x.dbo.formson_5248 t1
+                                                            Left Join v3x.dbo.formmain_5247 t2 On t1.formmain_id = t2.ID
+                                                            Where Isnull(t1.field0016,'')<> '' and t2.field0004 >= '2021-01-01' and len(field0016)= 8 and Isnull(t1.field0015,'')= '{0}'
+                                                            and Convert(int,'1' + t1.field0016)> (Convert(int, '1' + '{1}') - 5)  and Convert(int,'1' + t1.field0016)< (Convert(int, '1' + '{1}') + 5)  and
+                                                             t1.field0016 <> '{1}'";
+                                                    sql = string.Format(sql, sql, i.invoiceCode, i.invoiceNo);
+
+                                                    DataTable dt2 = runner.ExecuteSql(sql);
+                                                   
+                                                    //连号备注初始化，格式为：发票代码：XXXX 号码：XXX 与以下单据存在连号情况：
+                                                    if (dt2.Rows.Count > 0)
+                                                    {
+                                                        
+                                                        foreach (DataRow r in dt2.Rows)
+                                                        {
+                                                            lianhao = "表单：" + r["field0005"].ToString() + " 单号：" + r["field0008"].ToString() + (lianhao.Length >0 ? "" :"\r\n") + lianhao;
+                                                        }
+                                                        lianhao = "发票代码：" + i.invoiceCode + " 号码：" + i.invoiceNo + "与以下单据存在连号情况：\r\n" + lianhao;
+
+                                                    }
+
+                                                }
 
                                                 if (invoiceSeq == 1)//文件中只有一张发票
                                                 {
@@ -182,11 +210,11 @@ namespace iTR.OP.Invoice
                                                 sql = @"update formson_5248 Set field0033= isnull(field0033,0)+1,field0015='{0}',field0016='{1}',field0017='{2}',
                                                         field0018='{3}',field0019='{4}',field0021='{5}',field0022='{6}',field0023  ='{7}',
                                                         field0024='{8}',field0025='{9}',field0026='{10}',field0027='{7}',field0032='{11}',field0034='{12}' , field0042='{14}',
-                                                        field0049='{15}', field0050='{16}' ,field0053=''  Where ID={13}";
+                                                        field0049='{15}', field0050='{16}' ,field0053='',field0056='{17}'  Where ID={13}";
 
                                                 sql = string.Format(sql, i.invoiceCode, i.invoiceNo, i.invoiceDate, i.salerName, amount, i.buyerTaxNo, i.salerAccount,
                                                                                 i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID, checkDate.ToString(),
-                                                                                i.taxRate, i.invoiceMoney);
+                                                                                i.taxRate, i.invoiceMoney,lianhao);
 
                                                 runner.ExecuteSqlNone(sql);
                                                 if (fileName.Length > 0)
