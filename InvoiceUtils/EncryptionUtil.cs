@@ -12,10 +12,6 @@ namespace Invoice.Utils
 {
     public class EncrptionUtil
     {
-
-
-
-
         public static string GetMD5Str(string input)
         {
             // Use input string to calculate MD5 hash
