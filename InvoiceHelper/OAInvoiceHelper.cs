@@ -161,7 +161,7 @@ namespace iTR.OP.Invoice
 
                                                     DataTable dt2 = runner.ExecuteSql(sql);
                                                    
-                                                    //连号备注初始化，格式为：发票代码：XXXX 号码：XXX 与以下单据存在连号情况：
+                                                    //连号备注初始化，格式为：发票代码：XXXX 号码：XXX 与以下单据存在连号情况：单据,单号 
                                                     if (dt2.Rows.Count > 0)
                                                     {
                                                         
