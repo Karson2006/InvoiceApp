@@ -157,7 +157,7 @@ namespace iTR.OP.Invoice
                                                             Where Isnull(t1.field0016,'')<> '' and t2.field0004 >= '2021-01-01' and len(field0016)= 8 and Isnull(t1.field0015,'')= '{0}'
                                                             and Convert(int,'1' + t1.field0016)> (Convert(int, '1' + '{1}') - 5)  and Convert(int,'1' + t1.field0016)< (Convert(int, '1' + '{1}') + 5)  and
                                                              t1.field0016 <> '{1}'";
-                                                    sql = string.Format(sql, sql, i.invoiceCode, i.invoiceNo);
+                                                    sql = string.Format(sql, i.invoiceCode, i.invoiceNo);
 
                                                     DataTable dt2 = runner.ExecuteSql(sql);
                                                    
