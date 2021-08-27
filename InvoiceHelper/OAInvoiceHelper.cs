@@ -53,22 +53,29 @@ namespace iTR.OP.Invoice
             {
                 path = doc.SelectSingleNode("Configuration/Path").InnerText;
                 //尝试次数field0033少于3次，已经过了验证日期的，开发日期小于 当天，状态为
-                sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033," +
-                          "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 " +
-                          "    from formson_5248   ";
+                //sql = "Select ID, formmain_ID as pid, field0020 as FileID,field0013 as folder,field0012 as FileName,field0014,Isnull(field0033,0) as field0033," +
+                //          "    Isnull(field0053,'') As field0053,field0015,field0016,field0017,field0050,field0032 " +
+                //          "    from formson_5248   ";
+
+                sql = @"Select t1.ID, t1.formmain_ID as pid, t1.field0020 as FileID,t1.field0013 as folder,t1.field0012 as FileName,t1.field0014,Isnull(t1.field0033,0) as field0033,
+                        Isnull(t1.field0053,'') As field0053,t1.field0015,t1.field0016,t1.field0017,t1.field0050,t1.field0032,t3.Name  AS field0006,  t2.field0008,t1.field0018,t2.field0005
+                        from v3x.dbo.formson_5248   t1
+                        Left Join v3x.dbo.formmain_5247 t2 On t1.formmain_id = t2.ID
+                        Left Join v3x.dbo.ORG_MEMBER  t3 On t2.field0006 = convert(varchar(100),t3.ID)";
+
                 if (mode == 0)
                 {
-                    sql = sql + " Where    isnull(field0033,0) < 2 and isnull(field0039,'') ='是'  and CONVERT(varchar(100),field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
-                                      "  and  (isnull(field0023,'')   Not In('通过','重号') or isnull(field0053,'')='-4875734478274671070')  " +
-                                      "   and  field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') order by field0042 desc";
+                    sql = sql + " Where    isnull(t1.field0033,0) < 2 and isnull(t1.field0039,'') ='是'  and CONVERT(varchar(100),t1.field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
+                                      "  and  (isnull(t1.field0023,'')   Not In('通过','重号') or isnull(t1.field0053,'')='-4875734478274671070')  " +
+                                      "   and  t1.field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') order by t1.field0042 desc";
 
                     //sql = sql + " Where    field0020='-1208696524531874797'";
                 }
 
                 if (mode == 1)
                 {
-                    sql = sql + " Where formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
-                        "  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票','普通纸质发票')  and  isnull(field0027,'')   Not In('通过') " +
+                    sql = sql + " Where t1.formmain_Id In ( Select ID from formmain_5247 Where field0008 = '" + billNo + "') " +
+                        "  and t1.field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票','普通纸质发票')  and  isnull(t1.field0027,'')   Not In('通过') " +
                         "  and isnull(field0039,'') ='是' ";
                 }
                 SQLServerHelper runner = new SQLServerHelper();
@@ -136,7 +143,11 @@ namespace iTR.OP.Invoice
                                             {
                                                 decimal taxamout = 0;
                                                 invoiceSeq = invoiceSeq + 1;
-                                                string lianhao = "";//连号备注
+                                                string lianhao = "",lianhao1 = "";//同单连号备注
+                                                string lianhaoType="" ;//连号类型
+                                                decimal invoiceTotalamout = 0;
+
+                                                int invoiceCount = 0, invoiceCount1 = 0;//同单连号发票张数，异单连号发票张数
 
                                                 if (i.taxAmount.Trim().Length > 0)
                                                     taxamout = decimal.Parse(i.taxAmount.Trim());
@@ -149,11 +160,13 @@ namespace iTR.OP.Invoice
                                                 {
                                                     i.checkStatus = "重号";
                                                 }
-                                                else// 增加发票连号检查功能，王天池，2021-07-20
+                                                else// 增加发票连号检查功能，王天池，2021-07-20,
+                                                    // 王天池，2021-08-27，根据新的发票管控规则，优化
                                                 {
-                                                    sql = @"Select  distinct  t2.field0005 ,t2.field0008 
+                                                    sql = @"Select   t2.field0005 ,t2.field0008,t3.Name  AS field0006,t1.field0016,t1.field0019,convert(varchar(100),t1.field0017,23) AS field0017
                                                             From v3x.dbo.formson_5248 t1
                                                             Left Join v3x.dbo.formmain_5247 t2 On t1.formmain_id = t2.ID
+                                                            Left Join v3x.dbo.ORG_MEMBER  t3 On t2.field0006 = convert(varchar(100),t3.ID)
                                                             Where Isnull(t1.field0016,'')<> '' and t2.field0004 >= '2021-01-01' and len(field0016)= 8 and Isnull(t1.field0015,'')= '{0}'
                                                             and Convert(int,'1' + t1.field0016)> (Convert(int, '1' + '{1}') - 5)  and Convert(int,'1' + t1.field0016)< (Convert(int, '1' + '{1}') + 5)  and
                                                              t1.field0016 <> '{1}'";
@@ -163,14 +176,59 @@ namespace iTR.OP.Invoice
                                                    
                                                     //连号备注初始化，格式为：发票代码：XXXX 号码：XXX 与以下单据存在连号情况：单据,单号 
                                                     if (dt2.Rows.Count > 0)
-                                                    {
-                                                        
+                                                    {   
                                                         foreach (DataRow r in dt2.Rows)
                                                         {
-                                                            lianhao = "表单：" + r["field0005"].ToString() + " 单号：" + r["field0008"].ToString() + (lianhao.Length >0 ? "" :"\r\n") + lianhao;
-                                                        }
-                                                        lianhao = "发票代码：" + i.invoiceCode + " 号码：" + i.invoiceNo + "与以下单据存在连号情况：\r\n" + lianhao;
+                                                            if(row["field0008"].ToString() == r["field0008"].ToString()) //同单连号
+                                                            {
+                                                                invoiceCount = invoiceCount + 1;
+                                                                lianhao = r["field0016"].ToString()+"("  + r["field0019"].ToString() +")  " + lianhao;
+                                                            }
+                                                            else//异单连号
+                                                            {
 
+                                                                invoiceCount1 = invoiceCount1 + 1;
+                                                                lianhao1 = "单据：" + r["field0005"].ToString() + " 单号："+r["field0008"].ToString() + r["field0016"].ToString() + "(" + r["field0019"].ToString() + ")  "  + r["field0006"].ToString()+ " \r\n" + lianhao1; 
+                                                            }
+
+                                                            
+                                                        }
+
+                                                        //获取开票机构180天累计开票额度
+                                                        if(row["field0005"].ToString()== "付款申请5.0")//服务类
+                                                        {
+                                                            sql = @" Select Isnull(field0006,0) As field0006 from v3x.dbo.formmain_8899 Where field0002  = '服务类'  and field0001 ='{0}'";
+                                                        }
+                                                        else
+                                                        {
+                                                            sql = @" Select Isnull(field0006,0) As field0006 from v3x.dbo.formmain_8899 Where field0002 = '餐饮类'  and field0001 ='{0}'";
+                                                        }
+                                                        sql = string.Format(sql, row["field0018"].ToString() );
+                                                        DataTable dtInvoice = runner.ExecuteSql(sql);
+                                                        if (dtInvoice.Rows.Count >0)
+                                                        {
+                                                            invoiceTotalamout = decimal.Parse(dtInvoice.Rows[0]["field0006"].ToString() );
+                                                        }
+                                                    
+
+                                                        if (lianhao.Length >0)
+                                                        {
+                                                            lianhao = "【同单连号】代码 " + i.invoiceCode + " 号码 " + i.invoiceNo + "的连号情况：张数（ "+ invoiceCount.ToString()  + "） " + row["field0018"].ToString() +"(" + ")）\r\n" +  lianhao  ;
+                                                        }
+                                                        if (lianhao1.Length > 0)
+                                                        {
+                                                            lianhao1 = "【异单连号】代码 " + i.invoiceCode + " 号码 " + i.invoiceNo + "的连号情况：张数（ " + invoiceCount.ToString() + "） " +row["field0018"].ToString() + "(" + ")）\r\n"  +lianhao1;
+                                                        }
+                                                       
+                                                        if(lianhao1.Length>0 )
+                                                        {
+                                                            lianhaoType = "异单";
+                                                        }
+                                                        if(lianhao.Length>0)
+                                                        {
+                                                            lianhaoType = lianhaoType.Length > 0 ? "同异单" : "同单";
+                                                            lianhao = lianhao1.Length > 0 ? lianhao + " \r\n" + lianhao1 : lianhao;
+                                                        }
                                                     }
 
                                                 }
@@ -210,11 +268,11 @@ namespace iTR.OP.Invoice
                                                 sql = @"update formson_5248 Set field0033= isnull(field0033,0)+1,field0015='{0}',field0016='{1}',field0017='{2}',
                                                         field0018='{3}',field0019='{4}',field0021='{5}',field0022='{6}',field0023  ='{7}',
                                                         field0024='{8}',field0025='{9}',field0026='{10}',field0027='{7}',field0032='{11}',field0034='{12}' , field0042='{14}',
-                                                        field0049='{15}', field0050='{16}' ,field0053='',field0056='{17}'  Where ID={13}";
+                                                        field0049='{15}', field0050='{16}' ,field0053='',field0056='{17}',field0057='{18}',field0058={19}  Where ID={13}";
 
                                                 sql = string.Format(sql, i.invoiceCode, i.invoiceNo, i.invoiceDate, i.salerName, amount, i.buyerTaxNo, i.salerAccount,
                                                                                 i.checkStatus, i.checkErrcode, i.checkDescription, taxamout, i.checkCode, i.invoiceType, rowID, checkDate.ToString(),
-                                                                                i.taxRate, i.invoiceMoney,lianhao);
+                                                                                i.taxRate, i.invoiceMoney,lianhao,lianhaoType,invoiceTotalamout);
 
                                                 runner.ExecuteSqlNone(sql);
                                                 if (fileName.Length > 0)
