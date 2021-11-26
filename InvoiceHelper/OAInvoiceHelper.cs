@@ -35,11 +35,11 @@ namespace iTR.OP.Invoice
             }
         }
 
-        public string WebCheck(string billNumber)
-        {
-            string checkresult = Run(1, billNumber, true);
-            return checkresult;
-        }
+        //public string WebCheck(string billNumber)
+        //{
+        //    string checkresult = Run(1, billNumber, true);
+        //    return checkresult;
+        //}
 
         /// <summary>
         ///
@@ -73,11 +73,11 @@ namespace iTR.OP.Invoice
 
                 if (mode == 0)
                 {
-                    sql = sql + " Where    isnull(t1.field0033,0) < 2 and isnull(t1.field0039,'') ='是'  and CONVERT(varchar(100),t1.field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " +
+                    sql = sql + " Where    isnull(t1.field0033,0) < 2 and isnull(t1.field0039,'') ='是'  and CONVERT(varchar(100),t1.field0017, 23) <CONVERT(varchar(100),getdate(), 23)  " + "   and  t1.formmain_id='8342463430625887200'" +
                                       "  and  (isnull(t1.field0023,'')   Not In('通过','重号') or isnull(t1.field0053,'')='-4875734478274671070')  " +
                                       "   and  t1.field0042<='" + DateTime.Now.ToString() + "'  and field0014 In ('机打卷票','电子普通票','电子专用票','纸质普通票','纸质专用票') order by t1.field0042 desc";
 
-                    //sql = sql + " Where    field0020='-1208696524531874797'";
+                    //   sql = sql + "     t1.formmain_id='8342463430625887200'";
                 }
 
                 if (mode == 1)
@@ -160,7 +160,10 @@ namespace iTR.OP.Invoice
                                                 if (i.taxAmount.Trim().Length > 0)
                                                     taxamout = decimal.Parse(i.taxAmount.Trim());
                                                 // 王天池，2021-07-21，修正代码与号码设置反了的问题
-                                                sql = @"Select field0015 from v3x.dbo.formson_5248 Where (Select count(*) From  v3x.dbo.formson_5248 where field0015='{0}' and field0016='{1}') > 1";//验重判断
+                                                sql =
+                                                    "Select *  From  v3x.dbo.formson_5248 Where field0015='{0}' and field0016='{1}'  and  field0027='通过'";
+
+                                                //sql = @"Select field0015 from v3x.dbo.formson_5248 Where (Select count(*) From  v3x.dbo.formson_5248 where field0015='{0}' and field0016='{1}'  and  field0027='通过') >= 1";//验重判断
                                                 sql = string.Format(sql, i.invoiceCode, i.invoiceNo);
                                                 DataTable dt1 = new DataTable();
                                                 dt1 = runner.ExecuteSql(sql);
@@ -317,7 +320,7 @@ namespace iTR.OP.Invoice
 
                                         case "3110"://发票查验地区税局服务暂停
                                             sql = @"update formson_5248 Set field0033= {0} , field0027 ='{1}' Where ID={2}";
-                                            sql = string.Format(sql, 2, "地方税局暂定查验服务", row["ID"].ToString());
+                                            sql = string.Format(sql, 2, "地方税局暂停查验服务", row["ID"].ToString());
                                             runner.ExecuteSqlNone(sql);
                                             break;
 
